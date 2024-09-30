@@ -1,5 +1,5 @@
 storage "file" {
-  path = "/mnt/vault/data"
+  path = "./vault/data"
 }
 
 listener "tcp" {
@@ -10,3 +10,5 @@ listener "tcp" {
 api_addr = "http://127.0.0.1:8200"
 
 ui = true
+
+disable_mlock = true
