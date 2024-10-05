@@ -89,17 +89,18 @@ echo 'path "pki_int/issue/intra-heig-vd-ch" {
 # Start the Vault server with the config file
 vault server -config=config.hcl &
 
-# To avoid HTTPS client issues we use HTTP for this lab
+# export to HTTP
 export VAULT_ADDR='http://127.0.0.1:8200'
 
-# Wait for Vault server to start
+
 echo "Waiting for Vault server to start..."
 until curl -s $VAULT_ADDR/v1/sys/health | grep -q 'sealed'; do
-  echo "Trying again...."
+echo -e "\e[32mTrying to start server....T\e[0m"
   sleep 3
 done
 
-echo "Vault server is ready."
+echo -e "\e[32mVault server started.\e[0m"
+
 
 # Parse the initialization output to extract two unseal keys and the root token
 vault_init_output=$(vault operator init -key-shares=6 -key-threshold=2)
@@ -115,17 +116,16 @@ echo '{
   "root_token": "'$root_access_token'"
 }' > vault_keys.json
 
-echo "Vault keys and tokens have been saved to vault_keys.json"
+echo -e "\e[32mVault keys and tokens have been saved to vault_keys.json\e[0m"
 
-echo "UNSEALING THE VAULT:"
+echo -e "\e[32mUnsealing the vault.\e[0m"
 vault operator unseal $unseal_key_primary
 vault operator unseal $unseal_key_secondary
 
-# Proceed to login to Vault automatically using root token
-echo "LOGIN VAULT:"
+echo -e "\e[32mVault login authentification with root access token.\e[0m"
 vault login $root_access_token
 
-echo "Creating the admin policy and generating the admin token..."
+echo -e "\e[32mCreating the admin policy and gen the admin token.\e[0m"
 
 # Write the admin policy
 vault policy write admin admin-policy.hcl
@@ -134,15 +134,16 @@ vault policy write admin admin-policy.hcl
 admin_token=$(vault token create -format=json -policy="admin" | jq -r ".auth.client_token")
 
 # Append the admin token to the JSON file
+echo -e "\e[32mAdding admin token to json file.\e[0m"
 jq '. + {"admin_token": "'$admin_token'"}' vault_keys.json > vault_keys_updated.json && mv vault_keys_updated.json vault_keys.json
 
-echo "Admin token has been saved to vault_keys.json"
+echo -e "\e[32mAdmin token has been saved to vault_keys.json.\e[0m"
 
-echo "Setting up the Root Certificate Authority (CA)..."
+echo -e "\e[32mSetting up Root CA.\e[0m"
 
 # Enabling PKI
 vault secrets enable pki
-vault secrets tune -max-lease-ttl=87600h pki
+vault secrets tune -max-lease-ttl=87600h pki # 10 years
 
 # Generate Root certificate
 vault write -field=certificate pki/root/generate/internal \
@@ -158,9 +159,9 @@ vault write pki/config/urls \
      issuing_certificates="$VAULT_ADDRESS/v1/pki/ca" \
      crl_distribution_points="$VAULT_ADDRESS/v1/pki/crl"
 
-echo -e "\e[32mRoot CA has been successfully set up.\e[0m"
+echo -e "\e[32mRoot CA done.\e[0m"
 
-echo "Setting up the Intermediate Certificate Authority (CA)..."
+echo -e "\e[32mSetting up Intermediate CA.\e[0m"
 
 # Enabling pki_int
 vault secrets enable -path=pki_int pki
@@ -179,9 +180,9 @@ vault write -format=json pki/root/sign-intermediate \
 
 vault write pki_int/intermediate/set-signed certificate=@intermediate_cert.pem
 
-echo -e "\e[32mIntermediate CA has been successfully set up.\e[0m"
+echo -e "\e[32mIntermediate CA done.\e[0m"
 
-echo "Configuring intra policy, role, and certificate..."
+echo "Setting up intra policy, role, and certificate..."
 
 # Creating an intra role only for intra.heig-vd.ch
 vault write pki_int/roles/intra_heig_vd_ch \
@@ -222,11 +223,11 @@ echo "Adding user accounts to Vault..."
 vault auth enable userpass
 
 vault write auth/userpass/users/user_toto \
-    password=user_titi \
+    password=titi \
     policies=intra
 
 vault write auth/userpass/users/user_admin \
-    password=admin_password \
+    password=admin \
     policies=admin
 
 echo -e "\e[32mUser accounts have been successfully created in Vault.\e[0m"
