@@ -2,7 +2,7 @@
 
 ## Timeline 
 
-![alt text](image.png)
+![alt text](images/image.png)
 
 ## Randomness
 
@@ -17,16 +17,16 @@ A random number generator is a physical or computiation device that generates a 
 
 ### Statistical tests
 
-![alt text](image-1.png)
+![alt text](images/image-1.png)
 
 ### True Random Number Generators
 
 A true random number generator is an apparatus that generators random numbers from a physical process.
-![alt text](image-2.png)
+![alt text](images/image-2.png)
 
 ### Bad TRNGS
 
-![alt text](image-3.png)
+![alt text](images/image-3.png)
 
 
 ### Bit Distribution properties
@@ -35,7 +35,7 @@ A true random number generator is an apparatus that generators random numbers fr
 - Independent bits
 
 ### Randomness Extraction Neuann
-![alt text](image-4.png)
+![alt text](images/image-4.png)
 
 ### PRNG
 
@@ -45,28 +45,28 @@ Is a deterministi algorith whose aim is to generate a sequence of numbers exhibi
 
 ### Bad PRNGs : Mersenne Twiser.
 
-![alt text](image-5.png)
+![alt text](images/image-5.png)
 
-![alt text](image-6.png)
+![alt text](images/image-6.png)
 
-![alt text](image-7.png)
+![alt text](images/image-7.png)
 
 
 ### Cryptographically Secure PRNGs
 
-![alt text](image-8.png)
+![alt text](images/image-8.png)
 
 ### Blum Blum Shub PRNG
 
-![alt text](image-9.png)
+![alt text](images/image-9.png)
 The issue is that the person that generates p and q must throws it away because it can be used as a backdoor.
 
 ### Blum-Micali PRNG
 
-![alt text](image-10.png)
+![alt text](images/image-10.png)
 
 ### Forward and Backward Security
-![alt text](image-11.png)
+![alt text](images/image-11.png)
 
 ### Backward Security
 
@@ -86,21 +86,21 @@ Il faut de l'entropy, et maintenant il bloque sur le systeme moderne.
 
 ### Intel's RDSEED and RDRAND
 
-![alt text](image-12.png)
+![alt text](images/image-12.png)
 
-![alt text](image-13.png)
+![alt text](images/image-13.png)
 
 Dans chaque coeur, c'est un RDSEED different.
 
 ### RNRAND/RDSEED is not perfect
 
-![alt text](image-14.png)
+![alt text](images/image-14.png)
 
 Il faut checker le carry flag pour savoir s'il y a eu un retour de valeur aléatoire.  Il faut lire le carry flag pour savoir si dans le registre.
 
 ### Pool of Entropy
 
-![alt text](image-15.png)
+![alt text](images/image-15.png)
 
 **Dans les OS (maybe not windows)** : 
 
@@ -118,27 +118,27 @@ Ca empeche d'arriver à 0.
 ### Cryptographic PRNGs
 
 
-![alt text](image-16.png)
+![alt text](images/image-16.png)
 
 ### Hash_DRBG
 
-![alt text](image-17.png)
+![alt text](images/image-17.png)
 
-![alt text](image-18.png)
+![alt text](images/image-18.png)
 
 ### CTR_DRBG
-![alt text](image-19.png)
-![alt text](image-20.png)
+![alt text](images/image-19.png)
+![alt text](images/image-20.png)
 
 ### DUAL_EC_DRBG
 
-![alt text](image-21.png)
+![alt text](images/image-21.png)
 
 Jamais utilisé.
 
 ### Randomness Generation in Practice
 
-![alt text](image-22.png)
+![alt text](images/image-22.png)
 
 ## Symmetric Primitives and modes of Operation
 
