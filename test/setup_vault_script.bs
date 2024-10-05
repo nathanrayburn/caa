@@ -4,7 +4,7 @@
 sudo apt update && sudo apt install -y vault
 
 # Initialize Vault server in production mode
-sudo vault server -config=config.hcl &
+vault server --config=config.hcl &
 
 # Wait for Vault server to be up before continuing
 until vault status >/dev/null 2>&1; do
