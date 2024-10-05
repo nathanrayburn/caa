@@ -222,11 +222,11 @@ echo -e "\e[32mWildcard certificate has been successfully generated.\e[0m"
 echo "Adding user accounts to Vault..."
 vault auth enable userpass
 
-vault write auth/userpass/users/user_toto \
+vault write auth/userpass/users/toto \
     password=titi \
     policies=intra
 
-vault write auth/userpass/users/user_admin \
+vault write auth/userpass/users/admin \
     password=admin \
     policies=admin
 
