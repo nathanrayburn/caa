@@ -200,9 +200,9 @@ vault write -format=json pki_int/issue/intra_heig_vd_ch \
      format=pem_bundle ttl="24h" \
      | jq -r '.data.certificate' > intra_heig_vd_ch.pem
 
-echo -e "\e[32mIntra policy, role, and certificate have been successfully configured.\e[0m"
+echo -e "\e[32mIntra policy, role, and certificate are configured.\e[0m"
 
-echo "Generating wildcard certificate for the domain heig-vd.ch..."
+echo "Generating wildcard certificate for heig-vd.ch..."
 
 vault write pki_int/roles/heig_vd_ch \
   issuer_ref="$(vault read -field=default pki_int/config/issuers)" \
@@ -217,7 +217,7 @@ vault write -format=json pki_int/issue/heig_vd_ch \
     ttl="24h" \
     | jq -r '.data.certificate' > heig_vd_wildcard.pem
   
-echo -e "\e[32mWildcard certificate has been successfully generated.\e[0m"
+echo -e "\e[32mWildcard certificate are generated.\e[0m"
 
 echo "Adding user accounts to Vault..."
 vault auth enable userpass
@@ -230,4 +230,4 @@ vault write auth/userpass/users/admin \
     password=admin \
     policies=admin
 
-echo -e "\e[32mUser accounts have been successfully created in Vault.\e[0m"
+echo -e "\e[32mUser accounts have been created in Vault.\e[0m"
