@@ -142,6 +142,94 @@ Jamais utilisé.
 
 ## Symmetric Primitives and modes of Operation
 
+### Block Ciphers
+
+ - Camlia
+   - 
+ - DES
+   - Key is small asf
+ - RC6
+ - TwoFish
+ - AES
+   - Futur
+ - Serpent
+   - 
+ - Blowfish
+ - Threefish
+ - Triple-DES
+   - Legacy -> la clef est beaucoup plus grande. Et n'est pas efficace. Taille de block trop petit.
+  
+  ![alt text](image.png)
+### Triple-DES
+
+Version with 2 keys (112 bits) and one with 3 keys (168 bits). You can do a meet in the middle attaque.
+
+### AES 
+
+Block size of 128 bits, 192, 256 bits. Good security, fast on most platforms, large block size, strong design process.
+
+Ethe encryption and decprytion algrithms are rather different.
+
+### Camellia
+
+Block size 128 bits, key size of 128, 192 and 256 bits.
+
+Good security reasonbly fast on most platforms, large block size. Less efficient than AES
+
+### Serpent
+
+Might have a bigger security margin than AES.
+
+But is much slower than AES.
+
+### Block Cipher Block Size
+
+A cause de l'attaque par anniversaire. Check IPAD!
+
+### Padding
+
+Here are the standards.
+
+![alt text](image-1.png)
+
+Check the IPAD.
+
+## Hash Functions
+
+![alt text](image-2.png)
+Les versions avec les slash. Les autres sont des versions tronqués.
+
+### SHA-1 
+
+On peut trouver des collisions facilement.
+
+### SHA-2 
+
+![alt text](image-4.png)
+
+### SHA-3
+Using the sponge construction. -> Voir IPAD
+![alt text](image-5.png)
+![alt text](image-6.png)
+
+### SHA-3 Instances 
+
+![alt text](image-7.png)
+
+### Keakf Internal Permutation
+
+![alt text](image-8.png)
+
+### Shambles Attack
+
+On choisi une partie commun et vu que c'est Markle, on peut ajouter des valeurs a la fin. On peut rendre la collision exploitable sur SHA-1.
+![alt text](image-3.png)
+
+
+### Disk Encryption
+
+![alt text](image-9.png)
+
 ## Asymmetric primitives and Security Definitions
 
 ## Password-Based Cryptography and Key-derivation functions (KDF)
