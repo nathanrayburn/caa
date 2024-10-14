@@ -230,7 +230,102 @@ On choisi une partie commun et vu que c'est Markle, on peut ajouter des valeurs 
 
 ![alt text](image-9.png)
 
+## Stream Ciphers
+
+### Recommendations
+
+![alt text](image-10.png)
+
+### eStream Portofolio
+
+![alt text](image-11.png)
+
+### Chacha
+
+Made for resisting on timing attacks.
+
+![alt text](image-12.png)
+
+Par exemple utilisé si on utilise un petit processeur qui n'a pas les instructions AES, on a meilleur temps d'utiliser ChaCha20. Pour AES on devrait s'amuser a proteger contre les side channel attacks etc... C'est relou.
+
+ChaCha20 Mac = Poly1305
+
+### HMAC
+
+Il faut faire attention, il faut regarder la taille de clef si elle a été mise qu'elle ne soit pas trop petite...
+
+![alt text](image-13.png)
+
+### XMac
+
+On fait un Xor à la fin pour renforcer la sécurité et on evite les attaques par extensions. Au niveau des performances, EMac doit faire un AES supp à la fin. Alors que CMAC, on a besoin de faire une seule fois par clef, et on xor avec la constante. 
+
+![alt text](image-15.png)
+![alt text](image-14.png)
+
+
+### Poly1305 
+
+Key
+
+![alt text](image-16.png)
+
+Computing the MAC
+
+
+p = 2^130-5 (1305) And Acc = 0
+
+Ajoute le byte x01 à chaque block pour obtenir 17 bytes blocks.
+
+ret = ret + mi * r mod p
+
+jusqu'a qu'on absorbe tout les block du message.
+
+La valeur final c'est (Acc + s) mod 2^128.
+
+S = c'est les 16 bytes du block d'avant ( la clef )
+
+
+## Authenticated Encryption
+
+Il faut savoir en utilisant deux algos sûr ( chiffrement et Mac) ne veut pas dire que le système est sûr.
+
+![alt text](image-20.png)
+
+### Encrypt and Mac
+
+![alt text](image-17.png)
+
+### Mac then  Ecrypt
+
+![alt text](image-18.png)
+
+### Encrypt then Mac
+
+![alt text](image-19.png)
+
+### GCM
+
+![alt text](image-22.png)
+![alt text](image-21.png)
+![alt text](image-23.png)
+
+### ASCON 
+
+
+![alt text](image-24.png)
+
+### OCB 1.3
+Ressemblant à XTS.
+
+![alt text](image-25.png)
+
+### Deoxys-2
+
+![alt text](image-26.png)
+
 ## Asymmetric primitives and Security Definitions
+
 
 ## Password-Based Cryptography and Key-derivation functions (KDF)
 
