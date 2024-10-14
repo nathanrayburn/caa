@@ -2,6 +2,10 @@ import math
 import argparse
 
 def calculate_break_probability(n, d):
+
+    n = pow(2,n)
+    d = pow(2,d)
+    
     """
     Calculate the probability to break the algorithm using the birthday paradox formula.
     
