@@ -18,6 +18,8 @@ The probability to break the algorithm can be calculated using this formula, whe
 - \( n \) is the number of possible nonces.
 - \( d \) is the total number of blocks that can be encrypted securely.
 
+This means that approx after 2 nounces, we have a probability bigger than the recommended 2^-32.
+
 ### Question 3
 
 **A bank comes to you and wants some help with CTR. They are using 3 key 3-DES (key size: 168 bits, block size 64 bits). Here is their usage scenario:**
