@@ -189,7 +189,7 @@ def challenge4(p,E,G,n):
     print(A)
 
     A = A*n
-    B = n // pow(2,32)
+    B = pow(2,256)
 
     A[ - 2,  - 2] = B / n
     A[ - 1,  - 1] = B
