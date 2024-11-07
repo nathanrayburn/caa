@@ -46,7 +46,60 @@ static int get_string(const char *msg, char *buffer, size_t size) {
     buffer[strlen(buffer) - 1] = 0;
     return 1;
 }
+static int get_signature(struct ecdsa_private_key *private, char *filename_to_read){
+        struct ecdsa_sig sig = {NULL, NULL};
+        char filename[256];
+        uint8_t random[32];
+        BIGNUM *k = NULL;
+        int ret = 0;
+        strcpy(filename,filename_to_read);
 
+        if (RAND_bytes(random, sizeof random) != 1) {
+            printf("Failed to generate random bytes!\n");
+            goto do_free;
+        }
+
+      //  if (!get_string("Filename: ", filename, sizeof filename))
+       //     goto do_free;
+
+        if (!filename_is_allowed(filename)) {
+            printf("Permission denied!\n");
+            goto do_free;
+        }
+
+        if (!(k = BN_new())) {
+            printf("Failed to allocate k!\n");
+            goto do_free;
+        }
+
+        if (!BN_bin2bn(random, sizeof random, k)) {
+            printf("Failed to convert random to k!\n");
+            goto do_free;
+        }
+
+        if (!ecdsa_sign(&sig, private, filename, strlen(filename), k)) {
+            printf("Failed to generate signature!\n");
+            goto do_free;
+        }
+
+        printf("R: ");
+        BN_print_fp(stdout, sig.r);
+        printf("\n");
+
+        printf("S: ");
+        BN_print_fp(stdout, sig.s);
+        printf("\n");
+
+        ret = 1;
+
+        do_free:
+        ecdsa_sig_free(&sig);
+        OPENSSL_cleanse(random, sizeof random);
+        if (k)
+            BN_clear_free(k);
+
+        return ret;
+}/*
 static int get_signature(struct ecdsa_private_key *private) {
     struct ecdsa_sig sig = {NULL, NULL};
     char filename[256];
@@ -99,7 +152,7 @@ static int get_signature(struct ecdsa_private_key *private) {
         BN_clear_free(k);
 
     return ret;
-}
+}*/
 
 static int print_filecontent(const char *filename) {
     char buffer[1024];
@@ -200,8 +253,14 @@ static void menu(struct ecdsa_public_key *public,
         buffer[strcspn(buffer, "\r\n")] = 0;
 
         if (!strcmp(buffer, "1")) {
-            if (!get_signature(private))
-                break;
+            char filename[256] = "ecdsa.c";
+            printf("20 Signatures for file : %s\n",filename);
+            for(int i = 0; i<20;++i){
+                if (!get_signature(private,filename))
+                    break;
+                printf("\n");
+            }
+
         } else if (!strcmp(buffer, "2")) {
             if (!get_filecontent(public))
                 break;
