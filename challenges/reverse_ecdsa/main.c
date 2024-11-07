@@ -59,6 +59,8 @@ static int get_signature(struct ecdsa_private_key *private, char *filename_to_re
             goto do_free;
         }
 
+
+
       //  if (!get_string("Filename: ", filename, sizeof filename))
        //     goto do_free;
 
@@ -77,18 +79,22 @@ static int get_signature(struct ecdsa_private_key *private, char *filename_to_re
             goto do_free;
         }
 
+        /*
+
+        printf("Print random k : ");
+        BN_print_fp(stdout, k);
+        printf("\n");
+
+        */
+
         if (!ecdsa_sign(&sig, private, filename, strlen(filename), k)) {
             printf("Failed to generate signature!\n");
             goto do_free;
         }
 
-        printf("R: ");
         BN_print_fp(stdout, sig.r);
         printf("\n");
-
-        printf("S: ");
         BN_print_fp(stdout, sig.s);
-        printf("\n");
 
         ret = 1;
 
@@ -254,8 +260,10 @@ static void menu(struct ecdsa_public_key *public,
 
         if (!strcmp(buffer, "1")) {
             char filename[256] = "ecdsa.c";
-            printf("20 Signatures for file : %s\n",filename);
-            for(int i = 0; i<20;++i){
+            unsigned n_signatures = 100;
+
+            printf("%d Signatures for file : %s\n",n_signatures,filename);
+            for(int i = 0; i<n_signatures;++i){
                 if (!get_signature(private,filename))
                     break;
                 printf("\n");
@@ -285,8 +293,25 @@ int main(void) {
         exit(EXIT_FAILURE);
     }
 
+    printf("Private Key : ");
+    BN_print_fp(stdout,private.d);
+    printf("\n");
+
+    /*
+
+    BIGNUM *x, *y;
+    const EC_GROUP *group;
 
 
+    ECDSA_CHECK(EC_POINT_get_affine_coordinates_GF2m(public.group, public.dG, x, y,
+                                                     NULL));
+    printf("Public Key  : \n");
+    printf("x :");
+    BN_print_fp(stdout,x);
+    printf("\ny :");
+    BN_print_fp(stdout,y);
+    printf("\n");
+    */
     menu(&public, &private);
 
     ecdsa_private_key_free(&private);

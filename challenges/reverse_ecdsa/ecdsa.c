@@ -45,7 +45,6 @@ static int ecdsa_hash(BIGNUM *h, const void *buffer, size_t size) {
     ECDSA_CHECK(SHA256_Final(md, &ctx));
 
     ECDSA_CHECK(BN_bin2bn(md, SHA256_DIGEST_LENGTH, h));
-
     return 1;
 }
 
@@ -71,7 +70,7 @@ int ecdsa_generate_keys(struct ecdsa_public_key *public,
     ECDSA_CHECK((p = BN_new()));
     ECDSA_CHECK((ctx = BN_CTX_new()));
     ECDSA_CHECK(EC_GROUP_get_order(group, order, NULL));
-    ECDSA_CHECK(EC_GROUP_get_curve_GFp(group, p, NULL, NULL, ctx));
+    //ECDSA_CHECK(EC_GROUP_get_curve_GFp(group, p, NULL, NULL, ctx));
 
     /* Generate private key d */
     ECDSA_CHECK(BN_rand(d, BN_num_bits(order), -1, 0));
@@ -90,9 +89,9 @@ int ecdsa_generate_keys(struct ecdsa_public_key *public,
     BN_print_fp(stdout, order);
     printf("\n");
 
-    printf("Prime field (p): ");
+    /*printf("Prime field (p): ");
     BN_print_fp(stdout, p);
-    printf("\n");
+    printf("\n"); */
 
     BN_free(order);
     BN_free(p);
@@ -127,7 +126,6 @@ int ecdsa_sign(struct ecdsa_sig *sig,
     /* Get some curve parameters */
     ECDSA_CHECK((G = EC_GROUP_get0_generator(group)));
     ECDSA_CHECK(EC_GROUP_get_order(group, order, NULL));
-
     /* Check if k is between [1, n-1] */
     if (BN_cmp(k, BN_value_one()) < 0 || BN_cmp(k, order) >= 0)
         goto do_free;
@@ -137,6 +135,7 @@ int ecdsa_sign(struct ecdsa_sig *sig,
 
     ECDSA_CHECK(EC_POINT_get_affine_coordinates_GF2m(group, G, x, y,
                                                      NULL));
+
 
     /* Calculate: (x, y) = kG */
     ECDSA_CHECK(EC_POINT_mul(group, kG, NULL, G, k, NULL));
@@ -153,6 +152,8 @@ int ecdsa_sign(struct ecdsa_sig *sig,
 
     /* Calculate: y = k^-1(H(m) + dx) */
     ECDSA_CHECK(BN_mod_mul(y, x, private->d, order, ctx));
+
+
     ECDSA_CHECK(BN_mod_add(y, y, h, order, ctx));
     ECDSA_CHECK(BN_mod_mul(y, y, k_inv, order, ctx));
 
