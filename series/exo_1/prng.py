@@ -12,11 +12,9 @@ def generateGSpot(p):
     # Iterate over elements of the field to find a generator, skip 0
     for g in F:
         if g == 0:
-            continue  # Skip 0 as it's not valid for multiplicative order
+            continue
         
         if g.multiplicative_order() == p - 1:  # Check if the order of g is p-1
-            print("Order:")
-            print(g.multiplicative_order())
             print("G spot:")
             print(int(g))
             
