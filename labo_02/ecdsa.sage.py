@@ -104,9 +104,7 @@ def challenge1(p,E,G,n):
     Aspace = MatrixSpace(QQ, nbRows, nbCols)
     
     A = copy(Aspace.identity_matrix())
-
-    print(A)
-
+    
     A = A*n
     B = n // pow(_sage_const_2 ,_sage_const_32 )
 
@@ -126,7 +124,6 @@ def challenge1(p,E,G,n):
 
     for v in M:
         if v[-_sage_const_1 ] == B:
-            print("Good shit")
             alpha = ZZ((- v[-_sage_const_2 ] * n / B)%n)
     
     if (alpha * G == A1):
@@ -149,7 +146,7 @@ def challenge2(p,E,G,n):
 
     cipher = ChaCha20.new(key=key, nonce = nonce)
     size_n = ceil(RR(log(n,_sage_const_2 ))/_sage_const_8 ) 
-    k = int.from_bytes(cipher.encrypt(b"\x00"*size_n), "big")  # Random being weirdly predictable
+    k = int.from_bytes(cipher.encrypt(b"\x00"*size_n))  # Random being weirdly predictable
     
     a = F(s * k - h(m))/F(r)                            # Isolating the key
 
@@ -191,8 +188,6 @@ def challenge4(p,E,G,n):
     Aspace = MatrixSpace(QQ, nbRows, nbCols)
     
     A = copy(Aspace.identity_matrix())
-
-    print(A)
 
     A = A*n
     B = pow(_sage_const_2 ,_sage_const_256 )

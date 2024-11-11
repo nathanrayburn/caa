@@ -99,12 +99,8 @@ def challenge1(p,E,G,n):
     
     A = copy(Aspace.identity_matrix())
 
-    print(A)
-
     A = A*n
     B = n // pow(2,32)
-
-
 
     A[ - 2,  - 2] = B / n
     A[ - 1,  - 1] = B
@@ -120,7 +116,6 @@ def challenge1(p,E,G,n):
 
     for v in M:
         if v[-1] == B:
-            print("Good shit")
             alpha = ZZ((- v[-2] * n / B)%n)
     
     if (alpha * G == A1):
@@ -185,8 +180,6 @@ def challenge4(p,E,G,n):
     Aspace = MatrixSpace(QQ, nbRows, nbCols)
     
     A = copy(Aspace.identity_matrix())
-
-    print(A)
 
     A = A*n
     B = pow(2,256)
