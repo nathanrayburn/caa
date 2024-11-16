@@ -134,11 +134,11 @@ def challenge2(p,E,G,n):
     s = signatures2[i][1]
 
     F = Integers(n)
-    key = hashlib.sha256(m).digest()                    # Security not securing
+    key = hashlib.sha256(m).digest()                    # can calculate
 
-    cipher = ChaCha20.new(key=key, nonce = nonce)
+    cipher = ChaCha20.new(key=key, nonce = nonce)       
     size_n = ceil(RR(log(n,2))/8) 
-    k = int.from_bytes(cipher.encrypt(b"\x00"*size_n))  # Random being weirdly predictable
+    k = int.from_bytes(cipher.encrypt(b"\x00"*size_n))  # can calcualte
     
     a = F(s * k - h(m))/F(r)                            # Isolating the key
 
@@ -152,7 +152,7 @@ def challenge3(p,E,G,n):
     A3 = E(35588517809648137129175323977187276202129491123975810843739834407602321942814333082202311699763587006726635006230524, 13102327084583633558752332215628618829045979731964244320046427848488601008255228583383911950340633573818070241085093)
     m1 = messages3[0]
     m2 = messages3[1]
-    alpha = None
+
     F = Integers(n)
     
     r      = signatures3[0][0]
@@ -163,7 +163,7 @@ def challenge3(p,E,G,n):
     k = F((h(m1)-h(m2))/(s-sprime))
 
     alpha = F((s*k - h(m1))/r)
-    if alpha != None and alpha * G == A3:
+    if alpha * G == A3:
         print("Cracked private key")
         print(alpha)
 # Since the system is lacking randomness, we can also apply the Lattice Attack on the hidden number problem
