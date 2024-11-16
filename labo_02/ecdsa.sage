@@ -134,11 +134,11 @@ def challenge2(p,E,G,n):
     s = signatures2[i][1]
 
     F = Integers(n)
-    key = hashlib.sha256(m).digest()                    # Security not securing
+    key = hashlib.sha256(m).digest()                    # can calculate
 
-    cipher = ChaCha20.new(key=key, nonce = nonce)
+    cipher = ChaCha20.new(key=key, nonce = nonce)       
     size_n = ceil(RR(log(n,2))/8) 
-    k = int.from_bytes(cipher.encrypt(b"\x00"*size_n))  # Random being weirdly predictable
+    k = int.from_bytes(cipher.encrypt(b"\x00"*size_n))  # can calcualte
     
     a = F(s * k - h(m))/F(r)                            # Isolating the key
 
