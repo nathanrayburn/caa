@@ -23,8 +23,14 @@ if [[ ! -f "$KEY_FILE" ]]; then
   exit 1
 fi
 
-# Base64 encode the private key and export it as an environment variable
-export PRIVATE_KEY=$(base64 "$KEY_FILE")
+# Base64 encode the private key
+BASE64_KEY=$(base64 "$KEY_FILE")
 
-# Confirm the key is loaded (you can remove this for better security)
-echo "Private key has been loaded into the PRIVATE_KEY environment variable."
+# Write the PRIVATE_KEY to the .env file
+ENV_FILE=".env"
+echo "PRIVATE_KEY=\"$BASE64_KEY\"" > "$ENV_FILE"
+
+echo "Private key has been saved to '$ENV_FILE' as PRIVATE_KEY."
+
+# Confirm the key is loaded (optional for debugging; remove for production)
+echo "PRIVATE_KEY is now set in $ENV_FILE"
