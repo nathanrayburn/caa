@@ -4,6 +4,8 @@ version = "0.1.0"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
-tokio-rustls = "0.23"
-rustls = "0.24"
-webpki-roots = "0.22"
+rustls = "=0.23.19"
+rustls-pemfile = "1.0"
+tokio-rustls = "=0.26.1"
+native-tls = "0.2"
+tokio-native-tls = "0.3"

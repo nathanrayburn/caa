@@ -1,26 +1,32 @@
-use tokio::net::TcpListener;
-use tokio::io::{AsyncWriteExt, AsyncReadExt};
-use tokio_native_tls::TlsAcceptor;
-use native_tls::{Identity, TlsAcceptor as NativeTlsAcceptor};
-use std::fs::File;
-use std::io::Read;
+use native_tls::{Identity};
+use std::env;
+use base64::{decode};
+use std::error::Error;
+
+fn load_key() -> Result<Identity, Box<dyn Error>> {
+    // Get the base64-encoded private key from the environment variable
+    let private_key_base64 = env::var("PRIVATE_KEY")?;
+    
+    // Decode the base64-encoded private key
+    let private_key_bytes = decode(&private_key_base64)?;
+    
+    // Create the TLS identity (assuming it's a PEM-formatted private key)
+    let identity = Identity::from_pkcs12(&private_key_bytes, "password")?;
+    
+    Ok(identity)
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Load the server's identity
+    let identity = load_key()?;
 
-    // Load server's identity
-    let private_key_pem = env::var("PRIVATE_KEY")?;
-    let mut reader = io::BufReader::new(private_key_pem.as_bytes());
-    let mut identity = vec![];
-    reader.read_to_end(&mut identity)?;
-    let identity = Identity::from_pkcs12(&identity, "password")?;
-    
     // Create a TLS acceptor
-    let native_acceptor = NativeTlsAcceptor::builder(identity).build()?;
-    let acceptor = TlsAcceptor::from(native_acceptor);
+    let native_acceptor = native_tls::TlsAcceptor::builder(identity).build()?;
+    let acceptor = tokio_native_tls::TlsAcceptor::from(native_acceptor);
 
     // Create a TCP listener
-    let listener = TcpListener::bind("127.0.0.1:12345").await?;
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:12345").await?;
     println!("Server listening on 127.0.0.1:12345");
 
     loop {

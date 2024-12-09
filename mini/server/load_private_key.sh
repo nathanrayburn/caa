@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Path to the private key file
-KEY_FILE="keys/key.pem"
+KEY_FILE="certs/private/key.pem"
 
 # Check if the key file exists
 if [[ ! -f "$KEY_FILE" ]]; then
