@@ -23,12 +23,31 @@ if [[ ! -f "$KEY_FILE" ]]; then
   exit 1
 fi
 
+# Define the key file path
+PUB_KEY_FILE="$PUBLIC_DIR/cert.pem"
+
+# Check if the key file exists
+if [[ ! -f "$PUB_KEY_FILE" ]]; then
+  echo "Error: Public key file '$PUB_KEY_FILE' not found!"
+  exit 1
+fi
+
 PRIVATE_KEY_CONTENT=$(cat "$KEY_FILE")
+PUBLIC_KEY_CONTENT=$(cat "$PUB_KEY_FILE")
+
 # Write the PRIVATE_KEY to the .env file
 ENV_FILE=".env"
-echo "PRIVATE_KEY='$PRIVATE_KEY_CONTENT'" | paste -sd '\\n' - > "$ENV_FILE"
+
+echo "PUBLIC_KEY=\"$PUBLIC_KEY_CONTENT\"" > "$ENV_FILE"
+#echo "PUBLIC_KEY='$PUBLIC_KEY_CONTENT'" | paste -sd '\\n' - > "$ENV_FILE"
+
+echo "Private key has been saved to '$ENV_FILE' as PUBLIC_KEY."
+
+echo "PUBLIC_KEY is now set in $ENV_FILE"
+
+echo "PRIVATE_KEY=\"$PRIVATE_KEY_CONTENT\"" >> "$ENV_FILE"
+#echo "PRIVATE_KEY='$PRIVATE_KEY_CONTENT'" | paste -sd '\\n' - >> "$ENV_FILE"
 
 echo "Private key has been saved to '$ENV_FILE' as PRIVATE_KEY."
 
-# Confirm the key is loaded (optional for debugging; remove for production)
 echo "PRIVATE_KEY is now set in $ENV_FILE"
