@@ -23,12 +23,10 @@ if [[ ! -f "$KEY_FILE" ]]; then
   exit 1
 fi
 
-# Base64 encode the private key
-BASE64_KEY=$(base64 "$KEY_FILE")
-
+PRIVATE_KEY_CONTENT=$(cat "$KEY_FILE")
 # Write the PRIVATE_KEY to the .env file
 ENV_FILE=".env"
-echo "PRIVATE_KEY='$BASE64_KEY'" | paste -sd '\\n' - > "$ENV_FILE"
+echo "PRIVATE_KEY='$PRIVATE_KEY_CONTENT'" | paste -sd '\\n' - > "$ENV_FILE"
 
 echo "Private key has been saved to '$ENV_FILE' as PRIVATE_KEY."
 
