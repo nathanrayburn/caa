@@ -1,16 +1,23 @@
 use native_tls::Identity;
-use std::env;
+use std::{env, ffi::{OsStr, OsString}};
 use dotenv::dotenv;
 use base64::decode;
 use std::error::Error;
 use tokio::io::AsyncWriteExt;
 use std::fs;
+use std::fs::File;
+use std::io::{Read, Write};
+
 fn load_key() -> Result<Identity, Box<dyn Error>> {
     let private_key_base64 = env::var("PRIVATE_KEY")?;
     let public_key_base64 = env::var("PUBLIC_KEY")?;
+
     let public_key_bytes = decode(&public_key_base64)?;
     let private_key_bytes = decode(&private_key_base64)?;
-    let identity = Identity::from_pkcs8(&public_key_bytes,&private_key_bytes)?;
+    let identity = Identity::from_pkcs12(
+        include_bytes!("../certs/keystore/keyStore.p12"),
+        ""
+    )?; 
     Ok(identity)
 }
 
@@ -61,3 +68,4 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         });
     }
 }
+  
