@@ -7,8 +7,10 @@ use tokio::io::AsyncWriteExt;
 use std::fs;
 fn load_key() -> Result<Identity, Box<dyn Error>> {
     let private_key_base64 = env::var("PRIVATE_KEY")?;
+    let public_key_base64 = env::var("PUBLIC_KEY")?;
+    let public_key_bytes = decode(&public_key_base64)?;
     let private_key_bytes = decode(&private_key_base64)?;
-    let identity = Identity::from_pkcs12(&private_key_bytes, "password")?;
+    let identity = Identity::from_pkcs8(&public_key_bytes,&private_key_bytes)?;
     Ok(identity)
 }
 
@@ -24,9 +26,14 @@ fn check_env_file() {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     check_env_file();
     dotenv()?;
+
     match env::var("PRIVATE_KEY") {
         Ok(private_key) => println!("PRIVATE_KEY successfully loaded."),
         Err(e) => eprintln!("Failed to load PRIVATE_KEY: {}", e),
+    }
+    match env::var("PUBLIC_KEY") {
+        Ok(public_key) => println!("PUBLIC_KEY successfully loaded."),
+        Err(e) => eprintln!("Failed to load PUBLIC_KEY: {}", e),
     }
     let identity = load_key()?;
     let native_acceptor = native_tls::TlsAcceptor::builder(identity).build()?;
