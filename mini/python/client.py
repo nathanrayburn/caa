@@ -11,7 +11,14 @@ mem = pwhash.argon2i.MEMLIMIT_SENSITIVE
 def register_password():
     # check max size length
     return "password"
-
+def register_username():
+    return "username"
+def register_account():
+    # get username
+    # get password
+    # generate public and private keys
+def encrypt_private_key(private_key, user_key):
+    return ""
 def hkdf_username(username):
     salt = b""
     return kdf(secret.SecretBox.KEY_SIZE, username, salt, opslimit=ops, memlimit=mem)
@@ -24,4 +31,3 @@ def hkdf_password_server_hash(user_key):
     salt = b""
     return kdf(secret.SecretBox.KEY_SIZE, user_key, salt, opslimit=ops, memlimit=mem)
 # HKDF That returns the hashed password.
-
