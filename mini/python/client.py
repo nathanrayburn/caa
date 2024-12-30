@@ -24,12 +24,10 @@ argon2_hasher = PasswordHasher()
 @dataclass
 class User:
     username: str
-    password: str
-    userkey: str = field(default=None)
-    hashedUserKey: bytes = field(default=None)
+    hashedPassword: bytes = field(default=None)
     public_key: bytes = field(default=None)
-    private_key: bytes = field(default=None)
     encrypted_private_key: bytes = field(default=None)
+    nonce: bytes = field(default=None)
 
 def hashUserKey(userkey):
     hkdf = HKDF(
@@ -127,7 +125,7 @@ def registerClient():
     print(f"Encrypted Private Key{encryptedprivatekey}")
 
     # register to server
-    server.register(username, hasheduserkey, public_key, encryptedprivatekey)
+    server.register(username, hasheduserkey, public_key, encryptedprivatekey, nonce)
 
 def loginClient():
 
@@ -139,8 +137,16 @@ def loginClient():
 
     hasheduserkey = hashUserKey(userkey)
 
-    server.login(username, hasheduserkey)
+    return server.login(username, hasheduserkey), userkey
+
 
 def main():
-    loginClient()
+    registerClient()
+    user, userkey = loginClient()
+    encrypted_private_key = base64.b64decode(user.encrypted_private_key.decode('utf-8'))
+    nonce = base64.b64decode(user.nonce.decode("utf-8"))
+    print(decryptPrivateKey(userkey, encrypted_private_key, nonce))
+
+
+
 main()

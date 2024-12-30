@@ -15,6 +15,7 @@ class User:
     hashedPassword: bytes = field(default=None)
     public_key: bytes = field(default=None)
     encrypted_private_key: bytes = field(default=None)
+    nonce: bytes = field(default=None)
 
 
 def createDB():
@@ -97,7 +98,8 @@ def findUserInDB(username: str) -> Optional[User]:
                 hashedPassword=bytes.fromhex(user_data["hashedPassword"]) if user_data["hashedPassword"] else None,
                 public_key=user_data["public_key"].encode('utf-8') if user_data["public_key"] else None,
                 encrypted_private_key=user_data["encrypted_private_key"].encode('utf-8') if user_data[
-                    "encrypted_private_key"] else None
+                    "encrypted_private_key"] else None,
+                nonce=user_data["nonce"].encode('utf-8') if user_data["nonce"] else None
             )
         else:
             return None
@@ -112,45 +114,23 @@ def findUserInDB(username: str) -> Optional[User]:
         return None
 
 
-# Function to modify a user's password A VERIFIER
-def modifyUserPassword(username: str, old_password: str, new_password: str):
-    # Ensure the database exists
-    createDB()
 
-    # Load existing users
-    db = loadDB()
-
-    # Check if the user exists
-    if username not in db:
-        raise ValueError(f"User '{username}' does not exist in the database.") # TO CHANGE
-
-    # Verify the old password
-    user_data = db[username]
-    hashed_old_password = hashPassword(old_password)
-    if user_data["hashedPassword"].encode('utf-8') != hashed_old_password:
-        raise ValueError("Old password is incorrect.")
-
-    # Hash the new password and update it
-    hashed_new_password = hashPassword(new_password)
-    user_data["hashedPassword"] = hashed_new_password.decode('utf-8')
-
-    # Save the updated database
-    saveDB(db)
-    print(f"Password for user '{username}' has been updated successfully.")
 
 
 # Register
-def register(username, password, publicKey, cipheredPrivateKey):
+def register(username, password, publicKey, cipheredPrivateKey, nonce):
     # Check if user exists
     userInDB = findUserInDB(username)
     hashedPassword = hashPassword(password)
     b64_ct = base64.b64encode(cipheredPrivateKey).decode('utf-8')
+    b64_nonce = base64.b64encode(nonce).decode('utf-8')
     if userInDB is None:
         createUserInDB(User(
             username=username,
             hashedPassword=hashedPassword,
             public_key=publicKey,
-            encrypted_private_key=b64_ct
+            encrypted_private_key=b64_ct,
+            nonce=b64_nonce
         ))
         print(f"User '{username}' registered successfully.")
     else:
@@ -170,11 +150,35 @@ def login(username, password):
     # Compare the stored hashed password with the hashed input password
     if user.hashedPassword == hashedInputPassword:
         print("Login successful.")
-        return True
+        return user
     else:
         print("Invalid credentials.")
         return False
 
 # Change password
+# Function to modify a user's password A VERIFIER
+def modifyUserPassword(username: str, old_password: str, new_password: str):
+    # Ensure the database exists
+    createDB()
+    # Load existing users
+    db = loadDB()
+
+    # Check if the user exists
+    if username not in db:
+        raise ValueError(f"User '{username}' does not exist in the database.") # TO CHANGE
+
+    # Verify the old password
+    user_data = db[username]
+    hashed_old_password = hashPassword(old_password.encode("utf-8"))
+    if user_data["hashedPassword"].encode('utf-8') != hashed_old_password:
+        raise ValueError("Old password is incorrect.")
+
+    # Hash the new password and update it
+    hashed_new_password = hashPassword(new_password.encode("utf-8"))
+    user_data["hashedPassword"] = hashed_new_password.decode('utf-8')
+
+    # Save the updated database
+    saveDB(db)
+    print(f"Password for user '{username}' has been updated successfully.")
 
 # Store messages
