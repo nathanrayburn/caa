@@ -45,7 +45,6 @@ class User:
     # Method to decode the nonce
     def getNonce(self) -> bytes:
         return base64.b64decode(self.nonce.decode("utf-8"))
-
     # Method to decode the encrypted private key
     def getEncryptedPrivateKey(self) -> bytes:
         return base64.b64decode(self.encrypted_private_key.decode("utf-8"))
@@ -55,11 +54,13 @@ class Message:
     receiver: str
     id: int = field(default=None)
     senderEphemeralPublicKey: bytes = field(default=None)
-    content: str = field(default=None)
+    content: bytes = field(default=None)
     nonce: bytes = field(default=None)
     timeBeforeUnlock: datetime = field(default=None)
     def getNonce(self) -> bytes:
         return base64.b64decode(self.nonce.encode("utf-8"))
+    def getContent(self) -> bytes:
+        return base64.b64decode(self.content.encode("utf-8"))
 def hashUserKey(userkey):
     hkdf = HKDF(
         algorithm=hashes.SHA256(),
@@ -293,8 +294,9 @@ def sendMessageToUser(sender : User, receiverUsername, plaintext, timeBeforeUnlo
 
     print(ciphertext)
     b64_nonce = base64.b64encode(nonce).decode('utf-8')
+    b64_cipher = base64.b64encode(ciphertext).decode('utf-8')
     # Create message with given date
-    message = Message(sender=sender.username, receiver=receiverUsername, senderEphemeralPublicKey=export_public_key_to_bytes(sender_ephemeral_key), nonce=b64_nonce, timeBeforeUnlock=timeBeforeUnlock)
+    message = Message(sender=sender.username, content=b64_cipher, receiver=receiverUsername, senderEphemeralPublicKey=export_public_key_to_bytes(sender_ephemeral_key), nonce=b64_nonce, timeBeforeUnlock=timeBeforeUnlock)
     # Store into server
     server.sendMessage(sender, message)
     print("Message sent to server.")
@@ -305,18 +307,25 @@ def getMyMessages(user : User):
         print("No messages found.")
         return
     # Process each Message object
-    for message in messages:
-        # Calculate encryption key and process the message
-        nonce = Message.getNonce(message)
+    print("---------------------------------------")
+    print("Available {} messages".format(len(messages)))
 
-        decryptedmessage = receiveMessageFromUser(user, message.content, nonce, message.senderEphemeralPublicKey)
-        print(decryptedmessage)
-def receiveMessageFromUser(receiver : User, ciphertext, nonce, sender_ephemeral_key):
-    receiver_private_key_bytes = decryptPrivateKey(receiver.userKey, receiver.encrypted_private_key, receiver.nonce)
+    for _message in messages:
+        # Calculate encryption key and process the message
+
+        decryptedmessage = receiveMessageFromUser(user, _message)
+        print(f"From user {_message.sender}: {decryptedmessage}")
+    print("---------------------------------------")
+def receiveMessageFromUser(receiver : User, _message):
+
+    receiver_private_key_bytes = decryptPrivateKey(receiver.userKey, User.getEncryptedPrivateKey(receiver), User.getNonce(receiver))
     receiver_private_key = import_private_key_from_bytes(receiver_private_key_bytes)
     # Receiver decrypts the message
+    nonce = Message.getNonce(_message)
+    ciphertext = Message.getContent(_message)
+    sender_ephemeral_key = import_public_key_from_bytes(_message.senderEphemeralPublicKey)
+
     decrypted_message = receiver_workflow(receiver_private_key, sender_ephemeral_key, nonce, ciphertext)
-    print("Decrypted message:", decrypted_message)
     return decrypted_message
 def logged_menu(user):
     while True:

@@ -23,10 +23,9 @@ class Message:
     receiver: str
     id: int = field(default=None)
     senderEphemeralPublicKey: bytes = field(default=None)
-    content: str = field(default=None)
+    content: bytes = field(default=None)
     nonce: bytes = field(default=None)
     timeBeforeUnlock: datetime = field(default=None)
-
 # Function to create the message file if it doesn't exist
 def createMessageDB():
     if not os.path.exists(MESSAGE_FILE):

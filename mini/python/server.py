@@ -25,7 +25,7 @@ class Message:
     receiver: str
     id: int = field(default=None)
     senderEphemeralPublicKey: bytes = field(default=None)
-    content: str = field(default=None)
+    content: bytes = field(default=None)
     nonce: bytes = field(default=None)
     timeBeforeUnlock: datetime = field(default=None)
 
