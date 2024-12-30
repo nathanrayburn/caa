@@ -29,6 +29,14 @@ class User:
     encrypted_private_key: bytes = field(default=None)
     nonce: bytes = field(default=None)
 
+    # Method to decode the nonce
+    def getNonce(self) -> bytes:
+        return base64.b64decode(self.nonce.decode("utf-8"))
+
+    # Method to decode the encrypted private key
+    def getEncryptedPrivateKey(self) -> bytes:
+        return base64.b64decode(self.encrypted_private_key.decode("utf-8"))
+
 def hashUserKey(userkey):
     hkdf = HKDF(
         algorithm=hashes.SHA256(),
@@ -140,13 +148,61 @@ def loginClient():
     return server.login(username, hasheduserkey), userkey
 
 
+def sendMessage():
+    return 1
+
 def main():
-    registerClient()
-    user, userkey = loginClient()
-    encrypted_private_key = base64.b64decode(user.encrypted_private_key.decode('utf-8'))
-    nonce = base64.b64decode(user.nonce.decode("utf-8"))
-    print(decryptPrivateKey(userkey, encrypted_private_key, nonce))
+    #registerClient()
+    #user, userkey = loginClient()
+    #encrypted_private_key = base64.b64decode(user.encrypted_private_key.decode('utf-8'))
+    #nonce = base64.b64decode(user.nonce.decode("utf-8"))
+    # Test login
+    #user, userkey = loginClient()
+    main_menu()
 
+def main_menu():
+    user = None
+    while True:
+        print("\n=== Main Menu ===")
+        print("1. Register")
+        print("2. Login")
+        print("3. Quit")
+        print("=================\n")
+        choice = input("Choose an option: ")
 
+        if choice == "1":
+            registerClient()
+        elif choice == "2":
+            user, userkey = loginClient()
+            if user:
+                logged_menu(user)
+            else:
+                print("TA MERE LA PUTE")
+        elif choice == "3":
+            print("Goodbye!")
+            break
+        else:
+            print("Invalid option. Please try again.")
+
+def logged_menu(user):
+    while True:
+        print("\n=== Logged Menu ===")
+        print("1. Send message")
+        print("2. Modify password")
+        print("3. Logout")
+        choice = input("Choose an option: ")
+        if choice == "1":
+            sendMessage()
+        elif choice == "2":
+            userkey = deriveUserKeyFromPassword("username", "password")
+            hashedPassword = hashUserKey(userkey)
+            private_key = decryptPrivateKey(userkey, User.getEncryptedPrivateKey(user), User.getNonce(user))
+
+            newUserkey = deriveUserKeyFromPassword("username", "new_password")
+            newHashedUserkey = hashUserKey(newUserkey)
+
+            new_encrypted_private_key, nonce = encryptPrivateKey(newUserkey, private_key)
+
+            user = server.modifyPassword(user.username, hashedPassword, new_encrypted_private_key, nonce, newHashedUserkey)
 
 main()

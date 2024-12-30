@@ -114,9 +114,6 @@ def findUserInDB(username: str) -> Optional[User]:
         return None
 
 
-
-
-
 # Register
 def register(username, password, publicKey, cipheredPrivateKey, nonce):
     # Check if user exists
@@ -157,7 +154,7 @@ def login(username, password):
 
 # Change password
 # Function to modify a user's password A VERIFIER
-def modifyUserPassword(username: str, old_password: str, new_password: str):
+def modifyPassword(username: str, old_password: bytes, new_encrypted_private_key, nonce, new_password: bytes):
     # Ensure the database exists
     createDB()
     # Load existing users
@@ -168,17 +165,40 @@ def modifyUserPassword(username: str, old_password: str, new_password: str):
         raise ValueError(f"User '{username}' does not exist in the database.") # TO CHANGE
 
     # Verify the old password
-    user_data = db[username]
-    hashed_old_password = hashPassword(old_password.encode("utf-8"))
-    if user_data["hashedPassword"].encode('utf-8') != hashed_old_password:
+    user = findUserInDB(username)
+
+    hashed_old_password = hashPassword(old_password)
+    if user.hashedPassword != hashed_old_password:
         raise ValueError("Old password is incorrect.")
 
     # Hash the new password and update it
-    hashed_new_password = hashPassword(new_password.encode("utf-8"))
-    user_data["hashedPassword"] = hashed_new_password.decode('utf-8')
+    user.hashedPassword = hashPassword(new_password)
+    b64_ct = base64.b64encode(new_encrypted_private_key).decode('utf-8')
+    b64_nonce = base64.b64encode(nonce).decode('utf-8')
+    user.encrypted_private_key = b64_ct
+    user.nonce = b64_nonce
+
+    updateUserInDB(user)
+    print(f"Password for user '{username}' has been updated successfully.")
+
+def updateUserInDB(user : User):
+    createDB()
+    db = loadDB()
+    if user.username not in db:
+        raise ValueError(f"User '{user.username}' does not exist in the database.")
+
+    # Add the new user to the database
+    db[user.username] = asdict(user)
+
+    # Convert bytes to strings for JSON serialization
+    db[user.username]["hashedPassword"] = user.hashedPassword.hex() if user.hashedPassword else None
+    db[user.username]["public_key"] = user.public_key.decode('utf-8') if user.public_key else None
+    db[user.username]["encrypted_private_key"] = user.encrypted_private_key if user.encrypted_private_key else None
+
 
     # Save the updated database
     saveDB(db)
-    print(f"Password for user '{username}' has been updated successfully.")
+    print(f"Password changed successfully.")
+
 
 # Store messages
