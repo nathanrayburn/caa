@@ -1,33 +1,136 @@
-from nacl import pwhash, secret, utils
+import json
+import getpass
+import os
+import base64
+import server
 
-
+from argon2.low_level import hash_secret, Type, hash_secret_raw
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.backends import default_backend
+from argon2 import PasswordHasher
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from dataclasses import dataclass, field
+from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
+from argon2.exceptions import VerifyMismatchError
+from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
 # Configuration
-kdf = pwhash.argon2i.kdf
-ops = pwhash.argon2i.OPSLIMIT_SENSITIVE
-mem = pwhash.argon2i.MEMLIMIT_SENSITIVE
+# Initialize the Argon2 password hasher
+argon2_hasher = PasswordHasher()
 
-# exemple Alices_key = kdf(secret.SecretBox.KEY_SIZE, password, salt, opslimit=ops, memlimit=mem)
-# Get User password
-def register_password():
-    # check max size length
-    return "password"
-def register_username():
+
+
+@dataclass
+class User:
+    username: str
+    password: str
+    userkey: str = field(default=None)
+    hashedUserKey: bytes = field(default=None)
+    public_key: bytes = field(default=None)
+    private_key: bytes = field(default=None)
+    encrypted_private_key: bytes = field(default=None)
+
+def hashUserKey(userkey):
+    hkdf = HKDF(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=None,
+        info=b"serverkey-salt",
+        backend=default_backend()
+    )
+    return hkdf.derive(userkey)
+# Hash a password using Argon2id
+def deriveUserKeyFromPassword(username, password):
+    salt = deriveSaltFromUsername(username)
+
+    # Derive the raw hash/key using Argon2id
+    user_key = hash_secret_raw(
+        secret=password.encode(),
+        salt=salt,
+        time_cost=2,  # Time cost parameter (adjust as needed)
+        memory_cost=2**16,  # Memory cost parameter in kibibytes
+        parallelism=1,  # Parallelism factor
+        hash_len=32,  # Length of the resulting hash/key
+        type=Type.ID  # Argon2id (preferred for password hashing)
+    )
+    return user_key
+
+
+# Generate a salt using HKDF and the username
+def deriveSaltFromUsername(username):
+    hkdf = HKDF(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=None,
+        info=b"username-salt",
+        backend=default_backend()
+    )
+    return hkdf.derive(username.encode())
+
+def encryptPrivateKey(userkey, privateKey):
+    chacha = ChaCha20Poly1305(userkey)
+    nonce = os.urandom(12)
+    cipheredPrivateKey = chacha.encrypt(nonce, privateKey, None)
+    return cipheredPrivateKey, nonce
+
+def decryptPrivateKey(userkey, ct, nonce):
+    chacha = ChaCha20Poly1305(userkey)
+    return chacha.decrypt(nonce, ct, None)
+
+def getUsername():
     return "username"
-def register_account():
-    # get username
-    # get password
-    # generate public and private keys
-def encrypt_private_key(private_key, user_key):
-    return ""
-def hkdf_username(username):
-    salt = b""
-    return kdf(secret.SecretBox.KEY_SIZE, username, salt, opslimit=ops, memlimit=mem)
-# KDF That returns key to cipher the private key. Inputs password and HKDF ( username )
-def hkdf_password(password, username):
-    salt = username
-    return kdf(secret.SecretBox.KEY_SIZE, password, salt, opslimit=ops, memlimit=mem)
-# This function is the hash that is sent to the server ( used as password for login )
-def hkdf_password_server_hash(user_key):
-    salt = b""
-    return kdf(secret.SecretBox.KEY_SIZE, user_key, salt, opslimit=ops, memlimit=mem)
-# HKDF That returns the hashed password.
+def getPassword():
+    return "password"
+
+
+def keyGeneration():
+    # Generate private key
+    private_key = rsa.generate_private_key(
+        public_exponent=65537,  # Commonly used value
+        key_size=2048  # Key size in bits
+    )
+
+    # Serialize the private key
+    private_key_pem = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+
+    public_key = private_key.public_key()
+
+    # Serialize the public key
+    public_key_pem = public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+
+    return private_key_pem, public_key_pem
+
+def registerClient():
+    # get username input
+    username = getUsername()
+    # get password input
+    password = getPassword()
+    # generate keys
+    private_key, public_key = keyGeneration()
+    print("PRIV/PUB:", private_key, public_key)
+
+    userkey = deriveUserKeyFromPassword(username, password)
+    print("Userkey:", userkey)
+    hasheduserkey = hashUserKey(userkey)
+
+    # Encrypt private key
+    encryptedprivatekey, nonce = encryptPrivateKey(userkey, private_key)
+
+    print(f"Encrypted Private Key{encryptedprivatekey}")
+
+    # register to server
+    server.register(username, hasheduserkey, public_key, encryptedprivatekey)
+
+#def loginClient():
+
+def main():
+    registerClient()
+main()
