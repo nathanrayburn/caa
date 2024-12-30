@@ -1,9 +1,11 @@
 import base64
+import datetime
 import hashlib
 import os
 import json
 from dataclasses import dataclass, field, asdict
-from typing import Optional
+from typing import Optional, List
+import message
 
 # Path to the database file
 DB_FILE = "users.json"
@@ -17,6 +19,28 @@ class User:
     encrypted_private_key: bytes = field(default=None)
     nonce: bytes = field(default=None)
 
+@dataclass
+class Message:
+    sender: str
+    receiver: str
+    id: int = field(default=None)
+    senderEphemeralPublicKey: bytes = field(default=None)
+    content: str = field(default=None)
+    nonce: bytes = field(default=None)
+    timeBeforeUnlock: datetime = field(default=None)
+
+# Need to check that the user is logged in
+def getUserUnlockedMessages(username : str, password : str):
+
+    messages: List[Message] = message.getMessagesByReceiver(username)
+    # Get the current time to filter the unlocked messages
+    current_time = datetime.datetime.now()
+
+    # Filter messages that are unlocked (i.e., timeBeforeUnlock has passed)
+    unlocked_messages = [msg for msg in messages if msg.timeBeforeUnlock <= current_time]
+
+    # Return only the unlocked messages
+    return unlocked_messages
 
 def createDB():
     # Path to the JSON file
@@ -113,6 +137,11 @@ def findUserInDB(username: str) -> Optional[User]:
         print(f"An unexpected error occurred: {e}")
         return None
 
+def getUserPublicKey(username: str) -> bytes:
+    user = findUserInDB(username)
+    if user is None:
+        return None
+    return user.public_key
 
 # Register
 def register(username, password, publicKey, cipheredPrivateKey, nonce):
@@ -201,4 +230,20 @@ def updateUserInDB(user : User):
     print(f"Password changed successfully.")
 
 
-# Store messages
+def sendMessage(_user : User, _message : Message):
+    # Additionnal check if the receiver exist???
+    # Check if the user is logged in to send message!!
+    if findUserInDB(_message.receiver):
+        # Send the message
+        next_id = message.getNextMessageID()
+        _message.id = next_id
+
+        message.saveMessage(_message)
+
+    else:
+        print("The receiver '{_message.receiver}' does not exist.")
+
+
+# To get the message unlock time lol
+#def getMessageUnlockTime():
+
