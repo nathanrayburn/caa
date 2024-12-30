@@ -116,30 +116,27 @@ def keyGeneration():
 
 def registerClient():
     # get username input
-    username = getUsername()
+    username = input("Choose your username: ")
     # get password input
-    password = getPassword()
+    password = input("Choose your password: ")
     # generate keys
     private_key, public_key = keyGeneration()
-    print("PRIV/PUB:", private_key, public_key)
 
     userkey = deriveUserKeyFromPassword(username, password)
-    print("Userkey:", userkey)
+
     hasheduserkey = hashUserKey(userkey)
 
     # Encrypt private key
     encryptedprivatekey, nonce = encryptPrivateKey(userkey, private_key)
-
-    print(f"Encrypted Private Key{encryptedprivatekey}")
 
     # register to server
     server.register(username, hasheduserkey, public_key, encryptedprivatekey, nonce)
 
 def loginClient():
 
-    username = getUsername()
+    username = input("Enter your username: ")
 
-    password = getPassword()
+    password = input("Enter your password: ")
 
     userkey = deriveUserKeyFromPassword(username, password)
 
@@ -194,15 +191,19 @@ def logged_menu(user):
         if choice == "1":
             sendMessage()
         elif choice == "2":
-            userkey = deriveUserKeyFromPassword("username", "password")
+            password = input("Enter your old password: ")
+            userkey = deriveUserKeyFromPassword(user.username, password)
             hashedPassword = hashUserKey(userkey)
             private_key = decryptPrivateKey(userkey, User.getEncryptedPrivateKey(user), User.getNonce(user))
 
-            newUserkey = deriveUserKeyFromPassword("username", "new_password")
+            new_password = input("Enter your new password: ")
+            newUserkey = deriveUserKeyFromPassword(user.username, new_password)
             newHashedUserkey = hashUserKey(newUserkey)
 
             new_encrypted_private_key, nonce = encryptPrivateKey(newUserkey, private_key)
 
             user = server.modifyPassword(user.username, hashedPassword, new_encrypted_private_key, nonce, newHashedUserkey)
-
+        elif choice == "3":
+            print("Goodbye!")
+            break
 main()
