@@ -129,8 +129,18 @@ def registerClient():
     # register to server
     server.register(username, hasheduserkey, public_key, encryptedprivatekey)
 
-#def loginClient():
+def loginClient():
+
+    username = getUsername()
+
+    password = getPassword()
+
+    userkey = deriveUserKeyFromPassword(username, password)
+
+    hasheduserkey = hashUserKey(userkey)
+
+    server.login(username, hasheduserkey)
 
 def main():
-    registerClient()
+    loginClient()
 main()
