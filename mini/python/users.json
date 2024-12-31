@@ -1,0 +1,16 @@
+{
+    "test": {
+        "username": "test",
+        "hashedPassword": "f694e79cab6af936643e8423684a2f58e5b0d8ce60c4125dea40cf68eb383f29edd25750865d6f41e8912e58c3c97e73d9d6b210d2677eae399284239f47eeea",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEUnzh9hXDa2tMQxK5tL2HuTDDw3jU\neps27Xq0OYwbzoSOab/KFeA+XQFe/XmsRpgmw5XWtl1T05YkLjgrjOLtTQ==\n-----END PUBLIC KEY-----\n",
+        "encrypted_private_key": "Z0iOSlME++UR6U6Mn8GLJeGYLuZLuFlWjytKLobLfD6vgytk6jLR1/IUsj8r60a3Mcdk/xWf1V6WHegIC/rlXeb+H5ear3CdQkvOLXWeM6N+tHOkIH1yc1dbxApH7Rx+7LhlsU3yg2nR7WMw1jgEKozBmtay9zwHXB6e3swVy1dYDF+LZRwbepC+X0t2o8LtyyQYrwYP6AO30KJmVCxFhd/8puDPhwwv9XCRntyNYhQ1SlDI8qlabAUzITk+LqoouyyMBlRjj7LpTFXKUZ6y/RUPkUwzSyUeuBhCLJjp9ugNXhGPz3PQUay50gbzOsdruZwoHnyXEBe4/PRdiT3z4og=",
+        "nonce": "tz9d9Tw9x9gB/sVi"
+    },
+    "test2": {
+        "username": "test2",
+        "hashedPassword": "81903cde283d2d0b203caf53a161acaf01cb8ed2b1c9bf351765a903c744e2c7ec29218afd522027036be2ff878856079a638bb642349f09d9b16029d3ac5cc5",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEjS8JA3DmkdqEF7mXF1pLFkWm540+\n/T+JiH/X+ttAy7nbzJzbaSakcN/UXpBBJj39Dlzbd0akURqQ8doJSYJfCg==\n-----END PUBLIC KEY-----\n",
+        "encrypted_private_key": "gsNNx+eEekyX7e42h0RwqXqVSY7gNqvLgy6dp6BVcVoOnJRoVMV/zZX5Okh/gxZ1jYpaLzsIC54MkUWwKoIHT/pZTFjH5Rucsgb56yColYjwgmX8nMv6fKcoYM0ZwdIjUYE0168RqGr0qerRIglHlVq7pz9PR4fC9D9Bw/gSw0PUuC7yha0Qx3ihKYBz07+OmeGki1Ly+dJ+DUsqtzSLq9llMECAkCymcG0TC8HJEKsMNHlJFveyIpKpSas/a8PfmxBPszlr87dc9vg/Ky7NFfMGLMnixrGMFDmwAD/vk1W30vlVjDzMe2UrMKwFHHd0ucRlJ7/xyk9nv0sPMltqFt8=",
+        "nonce": "aNgB4vXlnmhMxIIT"
+    }
+}

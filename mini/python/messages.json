@@ -1,0 +1,20 @@
+[
+    {
+        "sender": "test",
+        "receiver": "test2",
+        "id": 1,
+        "senderEphemeralPublicKey": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEHgzb53IOR6sffnOTq/Rrtjw7a86k\nh9xJXhjKy7zAjp9mZLSPeRaIZZ+/3Jibk+WAvHyNUcs9nZKUccbehduLpA==\n-----END PUBLIC KEY-----\n",
+        "content": "g6d7D3D81azXCrlHE9NSy10hSClK4YHiYZOu9hkzbA==",
+        "nonce": "hvHetWEYRzj3vNGT",
+        "timeBeforeUnlock": "2024-12-30T20:20:20"
+    },
+    {
+        "sender": "test",
+        "receiver": "test2",
+        "id": 2,
+        "senderEphemeralPublicKey": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJRi4FHwpMrZHG8QPCzCFtyLAEG/6\nXq4eRZxpnNlT2K7NNloVPNVwFfCiR9aZLluJVWP/v6w+yl2pib5flIbUyA==\n-----END PUBLIC KEY-----\n",
+        "content": "vit5/rEODVMV2E0KLp+iToTqlfz0Lm1Xzc0FxAiLPl96Dg==",
+        "nonce": "WM5iCSXKOVHyBgef",
+        "timeBeforeUnlock": "2024-12-30T20:20:30"
+    }
+]
