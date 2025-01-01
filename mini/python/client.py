@@ -2,16 +2,6 @@ import json
 import getpass
 import os
 import base64
-from typing import List
-
-from cryptography.hazmat.primitives.asymmetric.dh import DHPublicKey
-from cryptography.hazmat.primitives.asymmetric.dsa import DSAPublicKey
-from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
-from cryptography.hazmat.primitives.asymmetric.ed448 import Ed448PublicKey
-from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
-from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PublicKey
-from cryptography.hazmat.primitives.asymmetric.x448 import X448PublicKey
 
 import signature
 import server
@@ -34,38 +24,15 @@ from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
 # Initialize the Argon2 password hasher
 argon2_hasher = PasswordHasher()
 
+from dataclass import user
+from dataclass import msg
+
+Message = msg.Message
+User = user.User
 
 
-@dataclass
-class User:
-    username: str
-    hashedPassword: bytes = field(default=None)
-    public_key: bytes = field(default=None)
-    encrypted_private_key: bytes = field(default=None)
-    nonce: bytes = field(default=None)
-    userKey: bytes = field(default=None)
-    # Method to decode the nonce
-    def getNonce(self) -> bytes:
-        return base64.b64decode(self.nonce.decode("utf-8"))
-    # Method to decode the encrypted private key
-    def getEncryptedPrivateKey(self) -> bytes:
-        return base64.b64decode(self.encrypted_private_key.decode("utf-8"))
-@dataclass
-class Message:
-    sender: str
-    receiver: str
-    id: int = field(default=None)
-    senderEphemeralPublicKey: bytes = field(default=None)
-    content: bytes = field(default=None)
-    nonce: bytes = field(default=None)
-    signature: bytes = field(default=None)
-    timeBeforeUnlock: datetime = field(default=None)
-    def getNonce(self) -> bytes:
-        return base64.b64decode(self.nonce.encode("utf-8"))
-    def getContent(self) -> bytes:
-        return base64.b64decode(self.content.encode("utf-8"))
-    def getSignature(self) -> bytes:
-        return base64.b64decode(self.signature.encode("utf-8"))
+
+
 def hashUserKey(userkey):
     hkdf = HKDF(
         algorithm=hashes.SHA256(),
@@ -253,12 +220,6 @@ def get_time_before_unlock():
 
 
 def main():
-    #registerClient()
-    #user, userkey = loginClient()
-    #encrypted_private_key = base64.b64decode(user.encrypted_private_key.decode('utf-8'))
-    #nonce = base64.b64decode(user.nonce.decode("utf-8"))
-    # Test login
-    #user, userkey = loginClient()
     main_menu()
 
 def main_menu():
@@ -331,6 +292,7 @@ def saveUnlockedMessages(_message: Message, decrypted_message):
             receiver=_message.receiver,
             content=_message.content,
             nonce=_message.nonce,
+            signature=_message.signature,
             timeBeforeUnlock=_message.timeBeforeUnlock.isoformat(),
             is_decrypted=True,
             decrypted_content=decrypted_message.decode('utf-8')
@@ -366,15 +328,21 @@ def receiveMessageFromUser(receiver: User, _message):
     receiver_private_key_bytes = decryptPrivateKey(receiver.userKey, User.getEncryptedPrivateKey(receiver),
                                                    User.getNonce(receiver))
     receiver_private_key = import_private_key_from_bytes(receiver_private_key_bytes)
+
     s = Message.getSignature(_message)
     nonce = Message.getNonce(_message)
     ciphertext = Message.getContent(_message)
+
     sender_ephemeral_key = import_public_key_from_bytes(_message.senderEphemeralPublicKey)
 
-    s_valid = signature.verify_signature(server.getUserPublicKey(_message.sender), ciphertext + _message.timeBeforeUnlock.isoformat().encode('utf-8'), s)
+    sender_public_key_bytes = server.getUserPublicKey(_message.sender)
+
+    sender_public_key = import_public_key_from_bytes(sender_public_key_bytes)
+
+    s_valid = signature.verify_signature(sender_public_key, ciphertext + _message.timeBeforeUnlock.isoformat().encode('utf-8'), s)
     if s_valid:
         decrypted_message = receiver_workflow(receiver_private_key, sender_ephemeral_key, nonce, ciphertext)
-
+        print(f"Message has a valid signature: {decrypted_message}")
         saveUnlockedMessages(_message, decrypted_message)
 
         return decrypted_message

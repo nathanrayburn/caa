@@ -6,27 +6,14 @@ import json
 from dataclasses import dataclass, field, asdict
 from typing import Optional
 import server
+from dataclass import user
+from dataclass import msg
+
+Message = msg.Message
+User = user.User
 
 MESSAGE_FILE = "messages.json"
 
-@dataclass
-class User:
-    username: str
-    hashedPassword: bytes = field(default=None)
-    public_key: bytes = field(default=None)
-    encrypted_private_key: bytes = field(default=None)
-    nonce: bytes = field(default=None)
-
-@dataclass
-class Message:
-    sender: str
-    receiver: str
-    id: int = field(default=None)
-    senderEphemeralPublicKey: bytes = field(default=None)
-    content: bytes = field(default=None)
-    nonce: bytes = field(default=None)
-    signature: bytes = field(default=None)
-    timeBeforeUnlock: datetime = field(default=None)
 # Function to create the message file if it doesn't exist
 def createMessageDB():
     if not os.path.exists(MESSAGE_FILE):

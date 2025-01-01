@@ -6,28 +6,15 @@ import json
 from dataclasses import dataclass, field, asdict
 from typing import Optional, List
 import message
-
+from dataclass import user
+from dataclass import msg
 # Path to the database file
 DB_FILE = "users.json"
 
+User = user.User
+Message = msg.Message
 
-@dataclass
-class User:
-    username: str
-    hashedPassword: bytes = field(default=None)
-    public_key: bytes = field(default=None)
-    encrypted_private_key: bytes = field(default=None)
-    nonce: bytes = field(default=None)
 
-@dataclass
-class Message:
-    sender: str
-    receiver: str
-    id: int = field(default=None)
-    senderEphemeralPublicKey: bytes = field(default=None)
-    content: bytes = field(default=None)
-    nonce: bytes = field(default=None)
-    timeBeforeUnlock: datetime = field(default=None)
 
 def getUserMessages(username : str, password : str):
 
