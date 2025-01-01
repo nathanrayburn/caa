@@ -68,7 +68,6 @@ def main():
     main_menu()
 
 def main_menu():
-    user = None
     while True:
         print("\n=== Main Menu ===")
         print("1. Register")
@@ -126,6 +125,7 @@ def saveLockedMessages(_message: Message):
             receiver=_message.receiver,
             content=_message.content,
             nonce=_message.nonce,
+            signature=_message.signature,
             timeBeforeUnlock=_message.timeBeforeUnlock.isoformat()
         )
 def saveUnlockedMessages(_message: Message, decrypted_message):
@@ -138,6 +138,7 @@ def saveUnlockedMessages(_message: Message, decrypted_message):
             content=_message.content,
             nonce=_message.nonce,
             signature=_message.signature,
+            senderEphemeralPublicKey=_message.senderEphemeralPublicKey.decode('utf-8'),
             timeBeforeUnlock=_message.timeBeforeUnlock.isoformat(),
             is_decrypted=True,
             decrypted_content=decrypted_message.decode('utf-8')

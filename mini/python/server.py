@@ -23,7 +23,7 @@ def getUserMessages(username : str, password : str):
     locked_messages = [msg for msg in messages if msg.timeBeforeUnlock > current_time]
     # remove the public key so the user can't decrypt since it's still locked
     for msg in locked_messages:
-        msg.timeBeforeUnlock = None
+        msg.senderEphemeralPublicKey = None
 
     return unlocked_messages, locked_messages
 
