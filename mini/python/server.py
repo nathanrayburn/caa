@@ -8,6 +8,7 @@ from typing import Optional, List
 import message
 from dataclass import user
 from dataclass import msg
+from utils import crypto
 # Path to the database file
 DB_FILE = "users.json"
 
@@ -81,12 +82,6 @@ def saveDB(data):
         json.dump(data, f, indent=4)
 
 
-# Function to hash the password using SHA3
-def hashPassword(password: bytes) -> bytes:
-
-    sha3_hasher = hashlib.sha3_512()
-    sha3_hasher.update(password)
-    return sha3_hasher.digest()
 
 
 # Function to create a user in the database
@@ -154,7 +149,7 @@ def getUserPublicKey(username: str) -> bytes:
 def register(username, password, publicKey, cipheredPrivateKey, nonce):
     # Check if user exists
     userInDB = findUserInDB(username)
-    hashedPassword = hashPassword(password)
+    hashedPassword = crypto.hashPassword(password)
     b64_ct = base64.b64encode(cipheredPrivateKey).decode('utf-8')
     b64_nonce = base64.b64encode(nonce).decode('utf-8')
     if userInDB is None:
@@ -178,7 +173,7 @@ def login(username, password):
         return False
 
     # Hash the provided password
-    hashedInputPassword = hashPassword(password)
+    hashedInputPassword = crypto.hashPassword(password)
 
     # Compare the stored hashed password with the hashed input password
     if user.hashedPassword == hashedInputPassword:
@@ -203,12 +198,12 @@ def modifyPassword(username: str, old_password: bytes, new_encrypted_private_key
     # Verify the old password
     user = findUserInDB(username)
 
-    hashed_old_password = hashPassword(old_password)
+    hashed_old_password = crypto.hashPassword(old_password)
     if user.hashedPassword != hashed_old_password:
         raise ValueError("Old password is incorrect.")
 
     # Hash the new password and update it
-    user.hashedPassword = hashPassword(new_password)
+    user.hashedPassword = crypto.hashPassword(new_password)
     b64_ct = base64.b64encode(new_encrypted_private_key).decode('utf-8')
     b64_nonce = base64.b64encode(nonce).decode('utf-8')
     user.encrypted_private_key = b64_ct

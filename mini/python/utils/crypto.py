@@ -1,10 +1,5 @@
+import hashlib
 import os
-import base64
-
-from utils import signature
-import server
-import local_message
-import datetime
 
 from argon2.low_level import Type, hash_secret_raw
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -13,10 +8,6 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.backends import default_backend
 from argon2 import PasswordHasher
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
-
-# Configuration
-# Initialize the Argon2 password hasher
-argon2_hasher = PasswordHasher()
 
 from dataclass import user
 from dataclass import msg
@@ -161,3 +152,10 @@ def receiver_workflow(receiver_private_key, sender_public_key, nonce, ciphertext
     # Decrypt the message
     plaintext = decrypt_message(encryption_key, nonce, ciphertext)
     return plaintext
+
+# Function to hash the password using SHA3
+def hashPassword(password: bytes) -> bytes:
+
+    sha3_hasher = hashlib.sha3_512()
+    sha3_hasher.update(password)
+    return sha3_hasher.digest()
