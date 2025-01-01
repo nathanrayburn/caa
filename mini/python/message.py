@@ -25,6 +25,7 @@ class Message:
     senderEphemeralPublicKey: bytes = field(default=None)
     content: bytes = field(default=None)
     nonce: bytes = field(default=None)
+    signature: bytes = field(default=None)
     timeBeforeUnlock: datetime = field(default=None)
 # Function to create the message file if it doesn't exist
 def createMessageDB():

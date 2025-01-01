@@ -12,8 +12,9 @@ class LocalMessage:
     id: int
     sender: str
     receiver: str
-    content: str  # base64 encoded bytes
-    nonce: str    # base64 encoded bytes
+    content: str   # base64 encoded bytes
+    nonce: str     # base64 encoded bytes
+    signature: str # base64 encoded bytes
     timeBeforeUnlock: str  # ISO format string
     is_decrypted: bool = False
     decrypted_content: str = None

@@ -13,6 +13,7 @@ from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PublicKey
 from cryptography.hazmat.primitives.asymmetric.x448 import X448PublicKey
 
+import signature
 import server
 import message
 import local_message
@@ -57,11 +58,14 @@ class Message:
     senderEphemeralPublicKey: bytes = field(default=None)
     content: bytes = field(default=None)
     nonce: bytes = field(default=None)
+    signature: bytes = field(default=None)
     timeBeforeUnlock: datetime = field(default=None)
     def getNonce(self) -> bytes:
         return base64.b64decode(self.nonce.encode("utf-8"))
     def getContent(self) -> bytes:
         return base64.b64decode(self.content.encode("utf-8"))
+    def getSignature(self) -> bytes:
+        return base64.b64decode(self.signature.encode("utf-8"))
 def hashUserKey(userkey):
     hkdf = HKDF(
         algorithm=hashes.SHA256(),
@@ -293,13 +297,20 @@ def sendMessageToUser(sender : User, receiverUsername, plaintext, timeBeforeUnlo
 
     sender_ephemeral_key, nonce, ciphertext = sender_workflow(receiver_public_key, plaintext)
 
+    sender_private_key_bytes = decryptPrivateKey(sender.userKey, User.getEncryptedPrivateKey(sender),
+                                                   User.getNonce(sender))
+    sender_private_key = import_private_key_from_bytes(sender_private_key_bytes)
+
+    s = signature.sign_message(sender_private_key, ciphertext + timeBeforeUnlock.isoformat().encode('utf-8'))
+
     print(ciphertext)
-    b64_nonce = base64.b64encode(nonce).decode('utf-8')
-    b64_cipher = base64.b64encode(ciphertext).decode('utf-8')
+    b64_signature = base64.b64encode(s).decode('utf-8')
+    b64_nonce     = base64.b64encode(nonce).decode('utf-8')
+    b64_cipher    = base64.b64encode(ciphertext).decode('utf-8')
     # Create message with given date
-    message = Message(sender=sender.username, content=b64_cipher, receiver=receiverUsername, senderEphemeralPublicKey=export_public_key_to_bytes(sender_ephemeral_key), nonce=b64_nonce, timeBeforeUnlock=timeBeforeUnlock)
+    _message = Message(sender=sender.username, content=b64_cipher, receiver=receiverUsername, senderEphemeralPublicKey=export_public_key_to_bytes(sender_ephemeral_key), nonce=b64_nonce, timeBeforeUnlock=timeBeforeUnlock, signature=b64_signature)
     # Store into server
-    server.sendMessage(sender, message)
+    server.sendMessage(sender, _message)
     print("Message sent to server.")
 def saveLockedMessages(_message: Message):
     if not local_message.message_exists_locally(_message.id):
@@ -342,7 +353,8 @@ def getMyMessages(user: User):
     # Process unlocked messages
     for _message in unlocked_messages:
         decryptedmessage = receiveMessageFromUser(user, _message)
-        print(f"From user {_message.sender}: {decryptedmessage}")
+        if decryptedmessage is not None:
+            print(f"From user {_message.sender}: {decryptedmessage}")
 
     # Save locked messages locally
     for _message in locked_messages:
@@ -354,16 +366,21 @@ def receiveMessageFromUser(receiver: User, _message):
     receiver_private_key_bytes = decryptPrivateKey(receiver.userKey, User.getEncryptedPrivateKey(receiver),
                                                    User.getNonce(receiver))
     receiver_private_key = import_private_key_from_bytes(receiver_private_key_bytes)
-
+    s = Message.getSignature(_message)
     nonce = Message.getNonce(_message)
     ciphertext = Message.getContent(_message)
     sender_ephemeral_key = import_public_key_from_bytes(_message.senderEphemeralPublicKey)
 
-    decrypted_message = receiver_workflow(receiver_private_key, sender_ephemeral_key, nonce, ciphertext)
+    s_valid = signature.verify_signature(server.getUserPublicKey(_message.sender), ciphertext + _message.timeBeforeUnlock.isoformat().encode('utf-8'), s)
+    if s_valid:
+        decrypted_message = receiver_workflow(receiver_private_key, sender_ephemeral_key, nonce, ciphertext)
 
-    saveUnlockedMessages(_message, decrypted_message)
+        saveUnlockedMessages(_message, decrypted_message)
 
-    return decrypted_message
+        return decrypted_message
+    else:
+        print("Couldn't validate the message's signature.")
+        return None
 def logged_menu(user):
     while True:
         print("\n=== Logged Menu ===")
