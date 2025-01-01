@@ -1,4 +1,6 @@
 import base64
+from typing import List
+
 import server
 
 import datetime
@@ -11,12 +13,14 @@ argon2_hasher = PasswordHasher()
 
 from dataclass import user
 from dataclass import msg
+from dataclass import localmsg
+from utils import tools
 from utils import crypto
 from utils import signature
 from client_database import db_local_message
 Message = msg.Message
 User = user.User
-
+LocalMessage = localmsg
 
 def registerClient():
     # get username input
@@ -146,10 +150,7 @@ def saveUnlockedMessages(_message: Message, decrypted_message):
     else:
         db_local_message.update_message_content(_message.id, decrypted_message.decode('utf-8'))
 
-
-def getMyMessages(user: User):
-    unlocked_messages, locked_messages = server.getUserMessages(user.username, user.hashedPassword)
-
+def downloadMessages(user: User,unlocked_messages : List[Message], locked_messages : List[Message]):
     if not unlocked_messages and not locked_messages:
         print("No messages found.")
         return
@@ -169,6 +170,9 @@ def getMyMessages(user: User):
         saveLockedMessages(_message)
     print("---------------------------------------")
 
+def getMyMessages(user: User):
+    unlocked_messages, locked_messages = server.getUserMessages(user.username, user.hashedPassword)
+    downloadMessages(user, unlocked_messages, locked_messages)
 
 def receiveMessageFromUser(receiver: User, _message):
     receiver_private_key_bytes = crypto.decryptPrivateKey(receiver.userKey, User.getEncryptedPrivateKey(receiver),
@@ -195,13 +199,33 @@ def receiveMessageFromUser(receiver: User, _message):
     else:
         print("Couldn't validate the message's signature.")
         return None
+def downloadNewMessages(user : User):
+    id_messages: List[int] = db_local_message.getAllMessageIDs()
+    unlocked_messages, locked_messages = server.getNewMessages(user.username, user.hashedPassword, id_messages)
+    downloadMessages(user, unlocked_messages, locked_messages)
+def unlockMessages(user : User, ephemeral_keys : dict):
+    # Iterate through the dictionary
+    for key, value in ephemeral_keys.items():
+        if value:
+            _localMessage : LocalMessage = db_local_message.get_message_by_id(key)
+            _localMessage.senderEphemeralPublicKey = value
+            _message = tools.convert_local_to_message(_localMessage)
+            receiveMessageFromUser(user, _message)
+
+def unlockAvailableMessages(user : User):
+    id_messages : List[int] = db_local_message.getUndecryptedUnlockedMessageIDs()
+    ephemeral_keys = server.getMessageEphemeralPublicKeys(user.username, user.hashedPassword, id_messages)
+    unlockMessages(user, ephemeral_keys)
+    return None
 def logged_menu(user):
     while True:
         print("\n=== Logged Menu ===")
         print("1. Send message")
         print("2. Get my messages")
-        print("3. Modify password")
-        print("4. Logout")
+        print("3. Download new messages")
+        print("4. Unlock available messages")
+        print("5. Modify password")
+        print("6. Logout")
         choice = input("Choose an option: ")
         if choice == "1":
             content = input("Enter your message: ")
@@ -212,6 +236,10 @@ def logged_menu(user):
         elif choice == "2":
             getMyMessages(user)
         elif choice == "3":
+            downloadNewMessages(user)
+        elif choice == "4":
+            unlockAvailableMessages(user)
+        elif choice == "5":
             password = input("Enter your old password: ")
             userkey = crypto.deriveUserKeyFromPassword(user.username, password)
             hashedPassword = crypto.hashUserKey(userkey)
@@ -225,7 +253,7 @@ def logged_menu(user):
 
             user = server.modifyPassword(user.username, hashedPassword, new_encrypted_private_key, nonce, newHashedUserkey)
             break;
-        elif choice == "4":
+        elif choice == "6":
             print("Goodbye!")
             break
 main()

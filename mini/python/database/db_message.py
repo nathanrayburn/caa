@@ -4,7 +4,7 @@ import hashlib
 import os
 import json
 from dataclasses import dataclass, field, asdict
-from typing import Optional
+from typing import Optional, List
 import server
 from dataclass import user
 from dataclass import msg
@@ -47,6 +47,15 @@ def getNextMessageID():
         return 1  # Start from 1 if no messages exist
     return max(int(message['id']) for message in messages) + 1
 
+
+def getNewMessages(username: str, id_messages: List[int]) -> List[Message]:
+    # Get all messages for the specified user
+    user_messages = getMessagesByReceiver(username)
+
+    # Filter out messages with IDs present in id_messages
+    new_messages = [msg for msg in user_messages if msg.id not in id_messages]
+
+    return new_messages
 def getMessagesByReceiver(username: str):
     # Load the existing messages from the database
     messages = loadMessageDB()
@@ -69,6 +78,29 @@ def getMessagesByReceiver(username: str):
         message_objects.append(Message(**msg))
 
     return message_objects
+def getEphemeralPublicKeys(message_ids: List[int]) -> dict:
+    """
+    Retrieves the senderEphemeralPublicKey for each message in the given list of message IDs.
+
+    Args:
+        message_ids (List[int]): A list of message IDs.
+
+    Returns:
+        dict: A dictionary mapping message IDs to their senderEphemeralPublicKeys (or None if not available).
+    """
+    messages = loadMessageDB()
+    ephemeral_keys = {}
+
+    for msg in messages:
+        if int(msg['id']) in message_ids:
+            # Decode the ephemeral public key if it exists
+            if 'senderEphemeralPublicKey' in msg and msg['senderEphemeralPublicKey']:
+                ephemeral_keys[int(msg['id'])] = msg['senderEphemeralPublicKey'].encode('utf-8')
+            else:
+                ephemeral_keys[int(msg['id'])] = None  # Set None if the key is not available
+
+    return ephemeral_keys
+
 
 def getMessageByID(message_id: int) -> Optional[Message]:
     # Load the existing messages from the database

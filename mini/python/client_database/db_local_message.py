@@ -12,7 +12,45 @@ LocalMessage = localmsg.LocalMessage
 
 LOCAL_MESSAGE_FILE = "../local_messages.json"
 
+def get_message_by_id(message_id: int) -> Optional[LocalMessage]:
+    """
+    Retrieves a message by its ID from the local message database.
 
+    Args:
+        message_id (int): The ID of the message to retrieve.
+
+    Returns:
+        Optional[LocalMessage]: The message object if found, or None if not found.
+    """
+    messages = load_local_messages()  # Load all messages from the local database
+
+    for msg in messages:  # Iterate through the messages
+        if msg.id == message_id:  # Check if the message ID matches
+            return msg  # Return the message if found
+
+    # If the message is not found, return None
+    print(f"Message with ID {message_id} not found.")
+    return None
+
+def getUndecryptedUnlockedMessageIDs() -> List[int]:
+    """
+    Retrieves the IDs of messages that have been unlocked (timeBeforeUnlock has passed)
+    but have not yet been decrypted.
+
+    Returns:
+        List[int]: A list of message IDs.
+    """
+    current_time = datetime.datetime.now()
+    messages = load_local_messages()
+    undecrypted_unlocked_ids = [
+        msg.id for msg in messages
+        if datetime.datetime.fromisoformat(msg.timeBeforeUnlock) <= current_time and not msg.is_decrypted
+    ]
+    return undecrypted_unlocked_ids
+
+def getAllMessageIDs() -> List[int]:
+    messages = load_local_messages()
+    return [msg.id for msg in messages]
 
 def create_local_message_db():
     if not os.path.exists(LOCAL_MESSAGE_FILE):
@@ -34,7 +72,7 @@ def save_local_messages(messages: List[LocalMessage]):
 
 def save_message(message_id: int, sender: str, receiver: str, content: str,
                 nonce: str, signature: str, timeBeforeUnlock: datetime.datetime,
-                is_decrypted: bool = False, decrypted_content: str = None):
+                is_decrypted: bool = False, decrypted_content: str = None, senderEphemeralPublicKey: str = None):
     messages = load_local_messages()
     new_message = LocalMessage.from_message(
         message_id=message_id,
@@ -43,6 +81,7 @@ def save_message(message_id: int, sender: str, receiver: str, content: str,
         content=content,
         nonce=nonce,
         signature=signature,
+        senderEphemeralPublicKey=senderEphemeralPublicKey,
         timeBeforeUnlock=timeBeforeUnlock,
         is_decrypted=is_decrypted,
         decrypted_content=decrypted_content

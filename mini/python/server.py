@@ -138,8 +138,23 @@ def updateUserInDB(user : User):
     # Save the updated database
     db_user.saveDB(db)
     print(f"Password changed successfully.")
+def getNewMessages(username : str, password : str, id_messages : List[int]):
+    current_time = datetime.datetime.now()
+    messages : List[Message] = db_message.getNewMessages(username,id_messages)
 
+    if len(messages) == 0:
+        return None, None
 
+    unlocked_messages = [msg for msg in messages if msg.timeBeforeUnlock <= current_time]
+    locked_messages = [msg for msg in messages if msg.timeBeforeUnlock > current_time]
+
+    return unlocked_messages, locked_messages
+def getMessageEphemeralPublicKeys(username : str, password : str, id_messages : List[int]) -> dict:
+    current_time = datetime.datetime.now()
+    ephemeral_keys = db_message.getEphemeralPublicKeys(id_messages)
+    if len(ephemeral_keys) == 0:
+        return None
+    return ephemeral_keys
 def sendMessage(_user : User, _message : Message):
     # Additionnal check if the receiver exist???
     # Check if the user is logged in to send message!!
