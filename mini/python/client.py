@@ -1,6 +1,6 @@
 import base64
 import server
-import local_message
+
 import datetime
 
 from argon2 import PasswordHasher
@@ -13,7 +13,7 @@ from dataclass import user
 from dataclass import msg
 from utils import crypto
 from utils import signature
-
+from client_database import db_local_message
 Message = msg.Message
 User = user.User
 
@@ -119,8 +119,8 @@ def sendMessageToUser(sender : User, receiverUsername, plaintext, timeBeforeUnlo
     server.sendMessage(sender, _message)
     print("Message sent to server.")
 def saveLockedMessages(_message: Message):
-    if not local_message.message_exists_locally(_message.id):
-        local_message.save_message(
+    if not db_local_message.message_exists_locally(_message.id):
+        db_local_message.save_message(
             message_id=_message.id,
             sender=_message.sender,
             receiver=_message.receiver,
@@ -130,8 +130,8 @@ def saveLockedMessages(_message: Message):
         )
 def saveUnlockedMessages(_message: Message, decrypted_message):
     # Save or update decrypted message locally
-    if not local_message.message_exists_locally(_message.id):
-        local_message.save_message(
+    if not db_local_message.message_exists_locally(_message.id):
+        db_local_message.save_message(
             message_id=_message.id,
             sender=_message.sender,
             receiver=_message.receiver,
@@ -143,7 +143,7 @@ def saveUnlockedMessages(_message: Message, decrypted_message):
             decrypted_content=decrypted_message.decode('utf-8')
         )
     else:
-        local_message.update_message_content(_message.id, decrypted_message.decode('utf-8'))
+        db_local_message.update_message_content(_message.id, decrypted_message.decode('utf-8'))
 
 
 def getMyMessages(user: User):

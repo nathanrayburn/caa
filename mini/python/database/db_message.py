@@ -12,7 +12,7 @@ from dataclass import msg
 Message = msg.Message
 User = user.User
 
-MESSAGE_FILE = "messages.json"
+MESSAGE_FILE = "../messages.json"
 
 # Function to create the message file if it doesn't exist
 def createMessageDB():

@@ -1,14 +1,13 @@
 import base64
 import datetime
-from dataclasses import dataclass, field, asdict
-from typing import Optional, List
-import message
+from dataclasses import asdict
+from typing import List
 from dataclass import user
 from dataclass import msg
 from utils import crypto
 
-from database import db_user
-
+from database import db_user, db_message
+from database import db_message
 
 User = user.User
 Message = msg.Message
@@ -18,7 +17,7 @@ Message = msg.Message
 def getUserMessages(username : str, password : str):
 
     current_time = datetime.datetime.now()
-    messages: List[Message] = message.getMessagesByReceiver(username)
+    messages: List[Message] = db_message.getMessagesByReceiver(username)
 
     unlocked_messages = [msg for msg in messages if msg.timeBeforeUnlock <= current_time]
     locked_messages = [msg for msg in messages if msg.timeBeforeUnlock > current_time]
@@ -29,7 +28,7 @@ def getUserMessages(username : str, password : str):
     return unlocked_messages, locked_messages
 
 def getEphemeralKeysByMessageID(id : int):
-    _message = message.getMessageByID(id)
+    _message = db_message.getMessageByID(id)
     current_time = datetime.datetime.now()
     if _message.timeBeforeUnlock <= current_time:
         return _message.senderEphemeralPublicKey
@@ -38,7 +37,7 @@ def getEphemeralKeysByMessageID(id : int):
 # Need to check that the user is logged in
 def getUserUnlockedMessages(username : str, password : str):
 
-    messages: List[Message] = message.getMessagesByReceiver(username)
+    messages: List[Message] = db_message.getMessagesByReceiver(username)
     # Get the current time to filter the unlocked messages
     current_time = datetime.datetime.now()
 
@@ -146,10 +145,10 @@ def sendMessage(_user : User, _message : Message):
     # Check if the user is logged in to send message!!
     if db_user.findUserInDB(_message.receiver):
         # Send the message
-        next_id = message.getNextMessageID()
+        next_id = db_message.getNextMessageID()
         _message.id = next_id
 
-        message.saveMessage(_message)
+        db_message.saveMessage(_message)
 
     else:
         print("The receiver '{_message.receiver}' does not exist.")
