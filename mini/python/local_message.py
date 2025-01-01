@@ -8,8 +8,6 @@ from typing import List, Optional
 from dataclass import localmsg
 
 
-
-
 LocalMessage = localmsg.LocalMessage
 
 LOCAL_MESSAGE_FILE = "local_messages.json"
