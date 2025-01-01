@@ -15,6 +15,7 @@ from cryptography.hazmat.primitives.asymmetric.x448 import X448PublicKey
 
 import server
 import message
+import local_message
 import datetime
 
 from argon2.low_level import hash_secret, Type, hash_secret_raw
@@ -300,32 +301,68 @@ def sendMessageToUser(sender : User, receiverUsername, plaintext, timeBeforeUnlo
     # Store into server
     server.sendMessage(sender, message)
     print("Message sent to server.")
+def saveLockedMessages(_message: Message):
+    if not local_message.message_exists_locally(_message.id):
+        local_message.save_message(
+            message_id=_message.id,
+            sender=_message.sender,
+            receiver=_message.receiver,
+            content=_message.content,
+            nonce=_message.nonce,
+            timeBeforeUnlock=_message.timeBeforeUnlock.isoformat()
+        )
+def saveUnlockedMessages(_message: Message, decrypted_message):
+    # Save or update decrypted message locally
+    if not local_message.message_exists_locally(_message.id):
+        local_message.save_message(
+            message_id=_message.id,
+            sender=_message.sender,
+            receiver=_message.receiver,
+            content=_message.content,
+            nonce=_message.nonce,
+            timeBeforeUnlock=_message.timeBeforeUnlock.isoformat(),
+            is_decrypted=True,
+            decrypted_content=decrypted_message.decode('utf-8')
+        )
+    else:
+        local_message.update_message_content(_message.id, decrypted_message.decode('utf-8'))
 
-def getMyMessages(user : User):
-    messages: List[Message] = server.getUserUnlockedMessages(user.username, user.hashedPassword)
-    if messages == None:
+
+def getMyMessages(user: User):
+    unlocked_messages, locked_messages = server.getUserMessages(user.username, user.hashedPassword)
+
+    if not unlocked_messages and not locked_messages:
         print("No messages found.")
         return
-    # Process each Message object
+
     print("---------------------------------------")
-    print("Available {} messages".format(len(messages)))
+    print(f"Available {len(unlocked_messages)} messages")
+    print(f"Locked {len(locked_messages)} messages")
 
-    for _message in messages:
-        # Calculate encryption key and process the message
-
+    # Process unlocked messages
+    for _message in unlocked_messages:
         decryptedmessage = receiveMessageFromUser(user, _message)
         print(f"From user {_message.sender}: {decryptedmessage}")
-    print("---------------------------------------")
-def receiveMessageFromUser(receiver : User, _message):
 
-    receiver_private_key_bytes = decryptPrivateKey(receiver.userKey, User.getEncryptedPrivateKey(receiver), User.getNonce(receiver))
+    # Save locked messages locally
+    for _message in locked_messages:
+        saveLockedMessages(_message)
+    print("---------------------------------------")
+
+
+def receiveMessageFromUser(receiver: User, _message):
+    receiver_private_key_bytes = decryptPrivateKey(receiver.userKey, User.getEncryptedPrivateKey(receiver),
+                                                   User.getNonce(receiver))
     receiver_private_key = import_private_key_from_bytes(receiver_private_key_bytes)
-    # Receiver decrypts the message
+
     nonce = Message.getNonce(_message)
     ciphertext = Message.getContent(_message)
     sender_ephemeral_key = import_public_key_from_bytes(_message.senderEphemeralPublicKey)
 
     decrypted_message = receiver_workflow(receiver_private_key, sender_ephemeral_key, nonce, ciphertext)
+
+    saveUnlockedMessages(_message, decrypted_message)
+
     return decrypted_message
 def logged_menu(user):
     while True:
@@ -356,6 +393,7 @@ def logged_menu(user):
             new_encrypted_private_key, nonce = encryptPrivateKey(newUserkey, private_key)
 
             user = server.modifyPassword(user.username, hashedPassword, new_encrypted_private_key, nonce, newHashedUserkey)
+            break;
         elif choice == "4":
             print("Goodbye!")
             break

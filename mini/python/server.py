@@ -29,6 +29,26 @@ class Message:
     nonce: bytes = field(default=None)
     timeBeforeUnlock: datetime = field(default=None)
 
+def getUserMessages(username : str, password : str):
+
+    current_time = datetime.datetime.now()
+    messages: List[Message] = message.getMessagesByReceiver(username)
+
+    unlocked_messages = [msg for msg in messages if msg.timeBeforeUnlock <= current_time]
+    locked_messages = [msg for msg in messages if msg.timeBeforeUnlock > current_time]
+    # remove the public key so the user can't decrypt since it's still locked
+    for msg in locked_messages:
+        msg.timeBeforeUnlock = None
+
+    return unlocked_messages, locked_messages
+
+def getEphemeralKeysByMessageID(id : int):
+    _message = message.getMessageByID(id)
+    current_time = datetime.datetime.now()
+    if _message.timeBeforeUnlock <= current_time:
+        return _message.senderEphemeralPublicKey
+    else:
+        return None
 # Need to check that the user is logged in
 def getUserUnlockedMessages(username : str, password : str):
 

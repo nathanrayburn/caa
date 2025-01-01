@@ -82,6 +82,28 @@ def getMessagesByReceiver(username: str):
 
     return message_objects
 
+def getMessageByID(message_id: int) -> Optional[Message]:
+    # Load the existing messages from the database
+    messages = loadMessageDB()
+
+    # Find the message with the given ID
+    for msg in messages:
+        if int(msg['id']) == message_id:
+            # Deserialize 'timeBeforeUnlock' back to datetime
+            if 'timeBeforeUnlock' in msg and msg['timeBeforeUnlock']:
+                msg['timeBeforeUnlock'] = datetime.datetime.fromisoformat(msg['timeBeforeUnlock'])
+
+            # Convert 'senderEphemeralPublicKey' back to bytes
+            if 'senderEphemeralPublicKey' in msg and msg['senderEphemeralPublicKey']:
+                msg['senderEphemeralPublicKey'] = msg['senderEphemeralPublicKey'].encode('utf-8')
+
+            # Convert the dictionary to a Message object
+            return Message(**msg)
+
+    # If the message is not found, return None
+    print(f"No message found with ID {message_id}.")
+    return None
+
 # Function to save a message in the message database
 def saveMessage(message: Message):
     # Ensure the message database exists
