@@ -9,9 +9,9 @@ class Message:
     receiver: str
     id: int = field(default=None)
     senderEphemeralPublicKey: bytes = field(default=None)
-    content: bytes = field(default=None)
-    nonce: bytes = field(default=None)
-    signature: bytes = field(default=None)
+    content: str = field(default=None)
+    nonce: str = field(default=None)
+    signature: str = field(default=None)
     timeBeforeUnlock: datetime = field(default=None)
     def getNonce(self) -> bytes:
         return base64.b64decode(self.nonce.encode("utf-8"))

@@ -21,8 +21,8 @@ def convert_local_to_message(local_message: LocalMessage) -> Message:
         receiver=local_message.receiver,
         id=local_message.id,
         senderEphemeralPublicKey=local_message.senderEphemeralPublicKey,
-        content=base64.b64decode(local_message.content.encode("utf-8")),
-        nonce=base64.b64decode(local_message.nonce.encode("utf-8")),
-        signature=base64.b64decode(local_message.signature.encode("utf-8")),
+        content=local_message.content,
+        nonce=local_message.nonce,
+        signature=local_message.signature,
         timeBeforeUnlock=datetime.datetime.fromisoformat(local_message.timeBeforeUnlock)
     )
