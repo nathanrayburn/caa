@@ -124,7 +124,23 @@ def modify_password(user: User):
 
     server.modifyPassword(user.username, hashed_password, encrypted_private_key, nonce, new_hashed_user_key)
     print("Password updated successfully!")
-
+def save_unlocked_message(_message: Message, decrypted_message):
+    # Save or update decrypted message locally
+    if not db_local_message.message_exists_locally(_message.id):
+        db_local_message.save_message(
+            message_id=_message.id,
+            sender=_message.sender,
+            receiver=_message.receiver,
+            content=_message.content,
+            nonce=_message.nonce,
+            signature=_message.signature,
+            senderEphemeralPublicKey=_message.senderEphemeralPublicKey.decode('utf-8'),
+            timeBeforeUnlock=_message.timeBeforeUnlock.isoformat(),
+            is_decrypted=True,
+            decrypted_content=decrypted_message.decode('utf-8')
+        )
+    else:
+        db_local_message.update_message_content(_message.id, decrypted_message.decode('utf-8'))
 def get_my_messages(user: User):
     unlocked_messages, locked_messages = server.getUserMessages(user.username, user.hashedPassword)
     download_messages(user, unlocked_messages, locked_messages)
@@ -167,13 +183,12 @@ def download_messages(user: User, unlocked_messages: List[Message], locked_messa
     print(f"Unlocked messages: {len(unlocked_messages)}")
     print(f"Locked messages: {len(locked_messages)}")
 
-    for message in unlocked_messages:
-        decrypted_message = receive_message_from_user(user, message)
+    for _message in unlocked_messages:
+        decrypted_message = receive_message_from_user(user, _message)
         if decrypted_message:
-            print(f"From {message.sender}: {decrypted_message}")
-
-    for message in locked_messages:
-        save_locked_message(message)
+            print(f"From {_message.sender}: {decrypted_message}")
+    for _message in locked_messages:
+        save_locked_message(_message)
 
 def receive_message_from_user(user: User, _message: Message):
     private_key_bytes = crypto.decryptPrivateKey(user.userKey, User.getEncryptedPrivateKey(user), User.getNonce(user))
@@ -191,12 +206,9 @@ def receive_message_from_user(user: User, _message: Message):
         base64.b64decode(_message.signature),
     )
     if signature_valid:
-        decrypted_message = crypto.receiver_workflow(
-            private_key,
-            crypto.import_public_key_from_bytes(_message.senderEphemeralPublicKey),
-            nonce,
-            content,
-        )
+        decrypted_message = crypto.receiver_workflow(private_key, crypto.import_public_key_from_bytes(_message.senderEphemeralPublicKey), nonce, content)
+        print(f"Message has a valid signature: {decrypted_message}")
+        save_unlocked_message(_message, decrypted_message)
         print("Valid message received.")
         return decrypted_message.decode("utf-8")
     else:

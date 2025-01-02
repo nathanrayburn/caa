@@ -17,7 +17,7 @@ Message = msg.Message
 def getUserMessages(username : str, password : str):
 
     current_time = datetime.datetime.now()
-    messages: List[Message] = db_message.getMessagesByReceiver(username)
+    messages: List[Message] = db_message.get_messages_by_receiver(username)
 
     unlocked_messages = [msg for msg in messages if msg.timeBeforeUnlock <= current_time]
     locked_messages = [msg for msg in messages if msg.timeBeforeUnlock > current_time]
@@ -28,7 +28,7 @@ def getUserMessages(username : str, password : str):
     return unlocked_messages, locked_messages
 
 def getEphemeralKeysByMessageID(id : int):
-    _message = db_message.getMessageByID(id)
+    _message = db_message.get_message_by_id(id)
     current_time = datetime.datetime.now()
     if _message.timeBeforeUnlock <= current_time:
         return _message.senderEphemeralPublicKey
@@ -37,7 +37,7 @@ def getEphemeralKeysByMessageID(id : int):
 # Need to check that the user is logged in
 def getUserUnlockedMessages(username : str, password : str):
 
-    messages: List[Message] = db_message.getMessagesByReceiver(username)
+    messages: List[Message] = db_message.get_messages_by_receiver(username)
     # Get the current time to filter the unlocked messages
     current_time = datetime.datetime.now()
 
@@ -140,7 +140,7 @@ def updateUserInDB(user : User):
     print(f"Password changed successfully.")
 def getNewMessages(username : str, password : str, id_messages : List[int]):
     current_time = datetime.datetime.now()
-    messages : List[Message] = db_message.getNewMessages(username,id_messages)
+    messages : List[Message] = db_message.get_new_messages(username,id_messages)
 
     if len(messages) == 0:
         return None, None
@@ -151,7 +151,7 @@ def getNewMessages(username : str, password : str, id_messages : List[int]):
     return unlocked_messages, locked_messages
 def getMessageEphemeralPublicKeys(username : str, password : str, id_messages : List[int]) -> dict:
     current_time = datetime.datetime.now()
-    ephemeral_keys = db_message.getEphemeralPublicKeys(id_messages)
+    ephemeral_keys = db_message.get_ephemeral_public_keys(id_messages)
     if len(ephemeral_keys) == 0:
         return None
     return ephemeral_keys
@@ -160,10 +160,10 @@ def sendMessage(_user : User, _message : Message):
     # Check if the user is logged in to send message!!
     if db_user.findUserInDB(_message.receiver):
         # Send the message
-        next_id = db_message.getNextMessageID()
+        next_id = db_message.get_next_message_id()
         _message.id = next_id
 
-        db_message.saveMessage(_message)
+        db_message.save_message(_message)
 
     else:
         print("The receiver '{_message.receiver}' does not exist.")

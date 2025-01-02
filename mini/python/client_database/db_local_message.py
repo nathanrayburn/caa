@@ -10,7 +10,7 @@ from dataclass import localmsg
 
 LocalMessage = localmsg.LocalMessage
 
-LOCAL_MESSAGE_FILE = "../local_messages.json"
+LOCAL_MESSAGE_FILE = "local_messages.json"
 
 def get_message_by_id(message_id: int) -> Optional[LocalMessage]:
     """
