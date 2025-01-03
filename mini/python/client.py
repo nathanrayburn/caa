@@ -256,6 +256,7 @@ def logged_menu(user: User):
             unlock_available_messages(user)
         elif choice == 5:
             modify_password(user)
+            break
         elif choice == 6:
             print("Logging out...")
             break

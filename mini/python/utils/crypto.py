@@ -6,7 +6,6 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.backends import default_backend
-from argon2 import PasswordHasher
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
 from dataclass import user
